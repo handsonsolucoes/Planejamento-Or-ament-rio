@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Orçamentário 2026 — Hands On</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root {
+  --bg:        #0b1420;
+  --surface:   #111d2e;
+  --surface2:  #172437;
+  --border:    #1e3050;
+  --border2:   #253d5e;
+  --gold:      #c9a84c;
+  --gold-dim:  #8a6e2e;
+  --gold-bg:   rgba(201,168,76,0.08);
+  --text:      #dce6f0;
+  --muted:     #6b849e;
+  --faint:     #3a5068;
+  --green:     #34d399;
+  --green-bg:  rgba(52,211,153,0.1);
+  --red:       #f87171;
+  --red-bg:    rgba(248,113,113,0.1);
+  --amber:     #fbbf24;
+  --white:     #ffffff;
+  --total-bg:  #0f1e30;
+  --total-bg2: #162030;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter','Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:12px;line-height:1.5}
+
+/* ─── SCROLLBAR ─── */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--gold-dim)}
+
+/* ─── HEADER ─── */
+.header{
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  padding:14px 28px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:100;
+}
+.header-left{display:flex;align-items:center;gap:12px}
+.logo{
+  width:34px;height:34px;border-radius:8px;flex-shrink:0;
+  background:linear-gradient(135deg,var(--gold) 0%,#e8c97a 100%);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:900;font-size:13px;color:var(--bg);letter-spacing:-0.5px;
+}
+.header-title{font-size:14px;font-weight:700;color:var(--white)}
+.header-sub{font-size:10px;color:var(--muted);margin-top:1px}
+.header-badge{
+  background:var(--gold-bg);border:1px solid var(--gold-dim);
+  color:var(--gold);font-size:10px;font-weight:600;
+  padding:3px 9px;border-radius:20px;letter-spacing:0.03em;
+}
+
+/* ─── TABS ─── */
+.tabs{
+  background:var(--surface);border-bottom:1px solid var(--border);
+  padding:0 28px;display:flex;gap:2px;
+}
+.tab{
+  padding:10px 18px;background:none;border:none;cursor:pointer;
+  color:var(--muted);font-size:11px;font-weight:600;font-family:inherit;
+  border-bottom:2px solid transparent;transition:all .15s;
+  letter-spacing:0.02em;text-transform:uppercase;
+}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--gold);border-bottom-color:var(--gold)}
+
+/* ─── PAGES ─── */
+.page{display:none}.page.active{display:block}
+
+/* ─── IMPORT SCREEN ─── */
+.import-screen{
+  min-height:calc(100vh - 90px);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:40px 20px;
+}
+.import-card{
+  background:var(--surface);border:1.5px dashed var(--border2);border-radius:16px;
+  padding:48px 56px;text-align:center;max-width:440px;width:100%;
+  transition:border-color .2s,background .2s;
+}
+.import-card:hover{border-color:var(--gold);background:rgba(201,168,76,.03)}
+.import-icon{font-size:36px;margin-bottom:16px}
+.import-card h2{font-size:17px;font-weight:700;color:var(--white);margin-bottom:8px}
+.import-card p{font-size:11.5px;color:var(--muted);line-height:1.7;margin-bottom:24px}
+.btn-primary{
+  display:inline-flex;align-items:center;gap:7px;
+  background:var(--gold);color:var(--bg);border:none;border-radius:8px;
+  padding:10px 22px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;
+  transition:background .15s,transform .1s;
+}
+.btn-primary:hover{background:#e8c97a;transform:translateY(-1px)}
+.btn-primary:active{transform:translateY(0)}
+input[type=file]{display:none}
+
+/* ─── MAIN LAYOUT ─── */
+.main{padding:18px 28px 50px}
+
+/* ─── TOOLBAR ─── */
+.toolbar{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:18px;flex-wrap:wrap;gap:10px;
+}
+.toolbar-left{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.toolbar-title{font-size:15px;font-weight:700;color:var(--white)}
+.toolbar-period{font-size:11px;color:var(--muted);margin-top:2px}
+.toolbar-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.btn{
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--surface2);border:1px solid var(--border2);border-radius:7px;
+  color:var(--muted);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;
+  padding:6px 13px;transition:all .15s;
+}
+.btn:hover{color:var(--text);border-color:var(--gold)}
+.btn.active-btn{background:var(--gold-bg);border-color:var(--gold);color:var(--gold)}
+.btn.gold{background:var(--gold);color:var(--bg);border-color:var(--gold);font-weight:700}
+.btn.gold:hover{background:#e8c97a}
+
+/* ─── MONTH SELECTOR ─── */
+.month-selector{
+  background:var(--surface);border:1px solid var(--border);border-radius:10px;
+  padding:14px 16px;margin-bottom:18px;
+}
+.month-selector-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.month-selector-title{font-size:11px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.06em}
+.month-pills{display:flex;flex-wrap:wrap;gap:6px}
+.mpill{
+  padding:5px 12px;border-radius:20px;
+  background:var(--surface2);border:1px solid var(--border2);
+  color:var(--muted);font-size:11px;font-weight:600;cursor:pointer;
+  transition:all .15s;user-select:none;
+}
+.mpill:hover{border-color:var(--gold);color:var(--text)}
+.mpill.selected{background:var(--gold-bg);border-color:var(--gold);color:var(--gold)}
+.mpill.unavailable{opacity:.35;cursor:not-allowed}
+.month-quick{display:flex;gap:6px;flex-wrap:wrap}
+.mq-btn{
+  padding:4px 10px;border-radius:6px;
+  background:none;border:1px solid var(--border2);
+  color:var(--muted);font-size:10px;font-weight:600;cursor:pointer;font-family:inherit;
+  transition:all .15s;
+}
+.mq-btn:hover{border-color:var(--gold-dim);color:var(--text)}
+
+/* ─── KPI CARDS ─── */
+.kpi-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:10px;margin-bottom:20px;
+}
+.kpi{
+  background:var(--surface);border:1px solid var(--border);border-radius:12px;
+  padding:16px;position:relative;overflow:hidden;
+}
+.kpi::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+  opacity:0;transition:opacity .2s;
+}
+.kpi:hover::before{opacity:1}
+.kpi-label{font-size:9.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+.kpi-value{font-size:20px;font-weight:800;color:var(--white);letter-spacing:-.5px;margin-bottom:4px}
+.kpi-orc{font-size:10px;color:var(--muted);margin-bottom:8px}
+.kpi-var-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.kpi-badge{
+  display:inline-flex;align-items:center;gap:3px;
+  padding:3px 8px;border-radius:5px;font-size:10px;font-weight:700;
+}
+.kpi-badge.pos{background:var(--green-bg);color:var(--green)}
+.kpi-badge.neg{background:var(--red-bg);color:var(--red)}
+.kpi-badge.neu{background:rgba(107,132,158,.1);color:var(--muted)}
+
+/* ─── TABLE ─── */
+.table-container{
+  background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;
+}
+.table-topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 16px;border-bottom:1px solid var(--border);background:var(--surface2);
+}
+.table-topbar-title{font-size:11px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.06em}
+.table-scroller{overflow-x:auto}
+table.dre{width:100%;border-collapse:collapse;min-width:900px}
+
+/* Sticky category column */
+table.dre th:first-child,
+table.dre td:first-child{
+  position:sticky;left:0;z-index:3;background:var(--surface);
+}
+table.dre tr.row-total th:first-child,
+table.dre tr.row-total td:first-child{background:var(--total-bg)}
+table.dre tr.row-group td:first-child{background:var(--surface)}
+
+/* Super header (month groups) */
+table.dre thead tr.super-header th{
+  background:var(--surface2);
+  padding:8px 0;
+  font-size:9.5px;font-weight:700;color:var(--gold);
+  text-align:center;text-transform:uppercase;letter-spacing:.06em;
+  border-bottom:1px solid var(--border);
+  white-space:nowrap;
+}
+table.dre thead tr.super-header th:first-child{
+  text-align:left;padding-left:14px;color:var(--muted);
+}
+table.dre thead tr.super-header th.sep{border-left:1px solid var(--border)}
+
+/* Sub header (col labels) */
+table.dre thead tr.sub-header th{
+  background:var(--total-bg);
+  padding:7px 8px;
+  font-size:9px;font-weight:700;color:var(--faint);
+  text-align:right;text-transform:uppercase;letter-spacing:.05em;
+  border-bottom:2px solid var(--border);
+  white-space:nowrap;
+}
+table.dre thead tr.sub-header th:first-child{text-align:left;padding-left:14px}
+table.dre thead tr.sub-header th.sep{border-left:1px solid var(--border)}
+
+/* Body cells */
+table.dre td{
+  padding:7px 8px;text-align:right;
+  font-size:11px;color:var(--muted);white-space:nowrap;
+  border-bottom:1px solid rgba(30,48,80,.6);
+}
+table.dre td:first-child{
+  text-align:left;padding-left:14px;
+  color:var(--text);font-size:11px;
+}
+table.dre tbody tr:hover td{background:rgba(201,168,76,.03)!important}
+table.dre tbody tr:hover td:first-child{background:rgba(201,168,76,.03)!important}
+
+/* Row types */
+table.dre tr.row-total td{
+  background:var(--total-bg)!important;
+  color:var(--white);font-weight:700;font-size:11.5px;
+  border-bottom:1px solid var(--border);
+  border-top:1px solid var(--border);
+}
+table.dre tr.row-total td:first-child{background:var(--total-bg)!important}
+table.dre tr.row-group td{color:var(--text);font-weight:600}
+table.dre tr.row-sub td:first-child{padding-left:28px;font-size:10.5px}
+table.dre tr.row-leaf td:first-child{padding-left:46px;font-size:10.5px;color:var(--muted)}
+
+/* Column separators */
+.sep-l{border-left:1px solid var(--border)!important}
+
+/* Cell value types */
+.cv-orc{color:var(--muted)}
+.cv-av{color:var(--faint);font-size:10px}
+.cv-real{color:var(--text);font-weight:600}
+.cv-real-total{color:var(--white);font-weight:700}
+.cv-pos{color:var(--green)}
+.cv-neg{color:var(--red)}
+.cv-zero{color:var(--faint)}
+
+/* ─── PROJECTIONS TAB ─── */
+.proj-toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px}
+.proj-title{font-size:15px;font-weight:700;color:var(--white)}
+.proj-sub{font-size:11px;color:var(--muted);margin-top:2px}
+
+.proj-container{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.proj-topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 16px;border-bottom:1px solid var(--border);background:var(--surface2);
+}
+.proj-topbar-title{font-size:11px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.06em}
+.proj-scroller{overflow-x:auto}
+
+table.proj{width:100%;border-collapse:collapse;min-width:700px}
+table.proj thead th{
+  background:var(--total-bg);padding:8px 10px;
+  font-size:9px;font-weight:700;color:var(--faint);
+  text-align:right;text-transform:uppercase;letter-spacing:.05em;
+  border-bottom:2px solid var(--border);white-space:nowrap;
+}
+table.proj thead th:first-child{text-align:left;padding-left:14px;min-width:180px}
+table.proj thead th.sep{border-left:1px solid var(--border)}
+table.proj thead th.month-grp{text-align:center;font-size:9.5px;color:var(--gold);border-bottom:1px solid var(--border)}
+
+table.proj td{
+  padding:7px 10px;text-align:right;font-size:11px;color:var(--muted);
+  border-bottom:1px solid rgba(30,48,80,.5);white-space:nowrap;
+}
+table.proj td:first-child{
+  text-align:left;padding-left:14px;color:var(--text);font-size:11px;
+}
+table.proj tbody tr:hover td{background:rgba(201,168,76,.03)}
+table.proj tr.proj-total td{
+  background:var(--total-bg);color:var(--white);font-weight:700;font-size:11.5px;
+  border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+}
+table.proj tr.proj-group td{color:var(--text);font-weight:600}
+
+.acc-sep{border-left:2px solid var(--gold-dim)!important}
+</style>
+</head>
+<body>
+
+<!-- ══ HEADER ══ -->
+<div class="header">
+  <div class="header-left">
+    <div class="logo">HO</div>
+    <div>
+      <div class="header-title">Dashboard Orçamentário 2026</div>
+      <div class="header-sub">Hands On — Análise Financeira</div>
+    </div>
+  </div>
+  <div class="header-badge">2026</div>
+</div>
+
+<!-- ══ TABS ══ -->
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('panorama')">Panorama Orçamentário</button>
+  <button class="tab" onclick="switchTab('projecoes')">Projeções</button>
+</div>
+
+<!-- ══════════════ PANORAMA ══════════════ -->
+<div id="page-panorama" class="page active">
+
+  <!-- Import screen -->
+  <div id="pan-import" class="import-screen">
+    <div class="import-card">
+      <div class="import-icon">📊</div>
+      <h2>Importar DRE Realizado</h2>
+      <p>Selecione o arquivo Excel com a DRE no formato padrão — categorias hierárquicas com os meses como colunas.</p>
+      <button class="btn-primary" onclick="document.getElementById('dre-file').click()">
+        📂 Selecionar arquivo
+      </button>
+      <input type="file" id="dre-file" accept=".xlsx,.xls" onchange="importDRE(this)">
+    </div>
+    <p style="font-size:11px;color:var(--muted);max-width:380px;text-align:center;line-height:1.8">
+      As projeções (Orçado) são definidas na aba <strong style="color:var(--gold)">Projeções</strong>.
+      Importe primeiro as projeções para ver a comparação completa.
+    </p>
+  </div>
+
+  <!-- Dashboard -->
+  <div id="pan-dash" class="main" style="display:none">
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <div>
+          <div class="toolbar-title" id="pan-title">Comparativo Plan × Real</div>
+          <div class="toolbar-period" id="pan-period">—</div>
+        </div>
+      </div>
+      <div class="toolbar-right">
+        <button class="btn" onclick="document.getElementById('dre-file2').click()">↻ Trocar arquivo</button>
+        <input type="file" id="dre-file2" accept=".xlsx,.xls" onchange="importDRE(this)">
+        <button class="btn" id="btn-view" onclick="toggleView()">☰ Detalhado</button>
+      </div>
+    </div>
+
+    <!-- Month selector -->
+    <div class="month-selector">
+      <div class="month-selector-header">
+        <span class="month-selector-title">Período de Análise</span>
+        <div class="month-quick">
+          <button class="mq-btn" onclick="selectAllMonths()">Todos</button>
+          <button class="mq-btn" onclick="selectQuarter(1)">1º Tri</button>
+          <button class="mq-btn" onclick="selectQuarter(2)">2º Tri</button>
+          <button class="mq-btn" onclick="selectQuarter(3)">3º Tri</button>
+          <button class="mq-btn" onclick="selectQuarter(4)">4º Tri</button>
+          <button class="mq-btn" onclick="selectSemester(1)">1º Sem</button>
+          <button class="mq-btn" onclick="selectSemester(2)">2º Sem</button>
+        </div>
+      </div>
+      <div class="month-pills" id="month-pills"></div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpi-grid" id="kpi-grid"></div>
+
+    <!-- Table -->
+    <div class="table-container">
+      <div class="table-topbar">
+        <span class="table-topbar-title" id="table-period-label">DRE — Período Selecionado</span>
+        <span style="font-size:10px;color:var(--muted)" id="table-rows-count"></span>
+      </div>
+      <div class="table-scroller" id="table-scroller"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ PROJEÇÕES ══════════════ -->
+<div id="page-projecoes" class="page">
+
+  <!-- Import -->
+  <div id="proj-import" class="import-screen">
+    <div class="import-card">
+      <div class="import-icon">🎯</div>
+      <h2>Importar Projeções 2026</h2>
+      <p>Selecione o arquivo Excel com as premissas macro — percentuais por categoria para cada mês do ano.</p>
+      <button class="btn-primary" onclick="document.getElementById('proj-file').click()">
+        📂 Selecionar arquivo
+      </button>
+      <input type="file" id="proj-file" accept=".xlsx,.xls" onchange="importProjecoes(this)">
+    </div>
+  </div>
+
+  <!-- Dashboard -->
+  <div id="proj-dash" class="main" style="display:none">
+    <div class="proj-toolbar">
+      <div>
+        <div class="proj-title">Premissas Macro — Orçamento 2026</div>
+        <div class="proj-sub" id="proj-sub-label">Projeções por categoria</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <button class="btn" id="btn-acc" onclick="toggleAccumulado()">∑ Acumulado</button>
+        <button class="btn" onclick="document.getElementById('proj-file2').click()">↻ Trocar arquivo</button>
+        <input type="file" id="proj-file2" accept=".xlsx,.xls" onchange="importProjecoes(this)">
+      </div>
+    </div>
+
+    <div class="proj-container">
+      <div class="proj-topbar">
+        <span class="proj-topbar-title">Projeções Mensais — R$ e % da Receita Bruta</span>
+        <span style="font-size:10px;color:var(--muted)">Percentuais aplicados sobre a receita bruta projetada de cada mês</span>
+      </div>
+      <div class="proj-scroller">
+        <table class="proj" id="proj-table"></table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════════════ */
+const S = {
+  dreRows: [],          // [{cat, level, vals:{month:val}, total}]
+  dreMonths: [],        // ['Jan/2026', ...]
+  selectedMonths: [],   // subset of dreMonths currently active
+  projRows: [],         // [{cat, months:[pct,...], revenues:[R$,...]}]
+  projRevenues: [],     // [jan$, fev$, ...]
+  viewMode: 'summary',  // 'summary' | 'detailed'
+  showAccumulado: false
+};
+
+const MONTHS_PT = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+
+const SUMMARY_PREFIXES = [
+  '01T','02T','03T','04.1','04.2','04.3','04T','05 ','06T','07T',
+  'Lucro / Prejuízo Operacional','Lucro / Prejuízo Líquido','Lucro / Prejuízo Final'
+];
+
+// Row semantic: revenue rows invert the positive/negative logic for colors
+const isRevenueRow = cat =>
+  /^01|^02T|^Receita Líquida|^Lucro/.test(cat);
+
+/* ═══════════════════════════════════════════════════════
+   TAB SWITCHING
+═══════════════════════════════════════════════════════ */
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach((b,i) => {
+    b.classList.toggle('active', (tab==='panorama'&&i===0)||(tab==='projecoes'&&i===1));
+  });
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-'+tab).classList.add('active');
+}
+
+/* ═══════════════════════════════════════════════════════
+   DRE IMPORT
+═══════════════════════════════════════════════════════ */
+function importDRE(input) {
+  const f = input.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = e => {
+    try {
+      const wb = XLSX.read(e.target.result, {type:'binary'});
+      const raw = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1, defval:null});
+      parseDRE(raw, f.name);
+    } catch(err) { alert('Erro ao ler arquivo: '+err.message); }
+  };
+  r.readAsBinaryString(f);
+  input.value = '';
+}
+
+function parseDRE(raw, fname) {
+  const monthRx = /^(Jan|Fev|Mar|Abr|Mai|Jun|Jul|Ago|Set|Out|Nov|Dez)[\/\-]/i;
+  let hdr = -1, colCat = -1;
+
+  for (let i = 0; i < raw.length; i++) {
+    const row = raw[i]; if (!row) continue;
+    const ci = row.findIndex(c => c && String(c).trim() === 'Categoria');
+    if (ci >= 0 && row.some(c => c && monthRx.test(String(c).trim()))) {
+      hdr = i; colCat = ci; break;
+    }
+  }
+  if (hdr < 0) { colCat = 0; hdr = 0; }
+
+  const header = raw[hdr];
+  const months = [], monthCols = [];
+  header.forEach((c,ci) => {
+    if (c && monthRx.test(String(c).trim())) { months.push(String(c).trim()); monthCols.push(ci); }
+  });
+  const totalColIdx = header.findIndex(c => c && /acumulado|total/i.test(String(c)));
+
+  const rows = [];
+  for (let i = hdr+1; i < raw.length; i++) {
+    const row = raw[i]; if (!row) continue;
+    const cat = row[colCat]; if (!cat || !String(cat).trim()) continue;
+    const catStr = String(cat).trim();
+    const vals = {};
+    months.forEach((m,mi) => {
+      const v = row[monthCols[mi]];
+      vals[m] = (v !== null && v !== undefined && !isNaN(parseFloat(v))) ? parseFloat(v) : null;
+    });
+    const total = totalColIdx >= 0 && row[totalColIdx] !== null && !isNaN(parseFloat(row[totalColIdx]))
+      ? parseFloat(row[totalColIdx]) : null;
+    rows.push({cat:catStr, vals, total});
+  }
+
+  S.dreRows = rows;
+  S.dreMonths = months;
+  S.selectedMonths = [...months];
+
+  const period = months.length > 0
+    ? months[0]+(months.length>1?' – '+months[months.length-1]:'')
+    : 'importado';
+  document.getElementById('pan-title').textContent = fname.replace(/\.(xlsx?)$/i,'').replace(/_/g,' ');
+  document.getElementById('pan-period').textContent = period + ' · ' + rows.length + ' categorias';
+
+  document.getElementById('pan-import').style.display = 'none';
+  document.getElementById('pan-dash').style.display = 'block';
+
+  buildMonthPills();
+  renderPanorama();
+}
+
+/* ═══════════════════════════════════════════════════════
+   MONTH PILLS
+═══════════════════════════════════════════════════════ */
+function buildMonthPills() {
+  const container = document.getElementById('month-pills');
+  container.innerHTML = S.dreMonths.map(m => `
+    <div class="mpill selected" data-month="${m}" onclick="toggleMonth('${m}')">
+      ${m}
+    </div>`).join('');
+}
+
+function toggleMonth(m) {
+  if (S.selectedMonths.includes(m)) {
+    if (S.selectedMonths.length === 1) return; // keep at least 1
+    S.selectedMonths = S.selectedMonths.filter(x => x !== m);
+  } else {
+    // Add in original order
+    S.selectedMonths = S.dreMonths.filter(x => S.selectedMonths.includes(x) || x === m);
+  }
+  updatePills();
+  renderPanorama();
+}
+
+function updatePills() {
+  document.querySelectorAll('.mpill').forEach(p => {
+    p.classList.toggle('selected', S.selectedMonths.includes(p.dataset.month));
+  });
+}
+
+function selectAllMonths() {
+  S.selectedMonths = [...S.dreMonths];
+  updatePills(); renderPanorama();
+}
+
+function selectQuarter(q) {
+  const qMap = {1:[0,1,2],2:[3,4,5],3:[6,7,8],4:[9,10,11]};
+  const idxs = qMap[q];
+  S.selectedMonths = S.dreMonths.filter((_,i) => idxs.includes(i));
+  if (!S.selectedMonths.length) S.selectedMonths = [...S.dreMonths];
+  updatePills(); renderPanorama();
+}
+
+function selectSemester(s) {
+  const idxs = s===1 ? [0,1,2,3,4,5] : [6,7,8,9,10,11];
+  S.selectedMonths = S.dreMonths.filter((_,i) => idxs.includes(i));
+  if (!S.selectedMonths.length) S.selectedMonths = [...S.dreMonths];
+  updatePills(); renderPanorama();
+}
+
+/* ═══════════════════════════════════════════════════════
+   PROJECTIONS (ORÇADO) HELPER
+═══════════════════════════════════════════════════════ */
+function getOrcadoForMonth(cat, monthLabel) {
+  if (!S.projRows.length) return null;
+  const mIdx = MONTHS_PT.findIndex(m => monthLabel && monthLabel.toLowerCase().startsWith(m.toLowerCase()));
+  if (mIdx < 0) return null;
+  const rev = S.projRevenues[mIdx];
+  if (!rev) return null;
+
+  // Direct match
+  let pr = S.projRows.find(r => r.cat === cat);
+  // Fuzzy match
+  if (!pr) pr = S.projRows.find(r => cat.startsWith(r.cat) || r.cat.startsWith(cat.substring(0,8)));
+  if (!pr) return null;
+
+  if (/^01T|Receita Bruta/.test(cat)) return rev;
+  const perc = pr.months[mIdx];
+  if (perc === null || perc === undefined) return null;
+  return rev * perc;
+}
+
+/* ═══════════════════════════════════════════════════════
+   RENDER PANORAMA
+═══════════════════════════════════════════════════════ */
+function toggleView() {
+  S.viewMode = S.viewMode === 'summary' ? 'detailed' : 'summary';
+  document.getElementById('btn-view').textContent = S.viewMode === 'summary' ? '☰ Detalhado' : '⊟ Resumo';
+  renderPanorama();
+}
+
+function renderPanorama() {
+  renderKPIs();
+  renderDRETable();
+  const label = S.selectedMonths.length === S.dreMonths.length
+    ? 'Acumulado Anual' : 'Acumulado ' + S.selectedMonths[0] + (S.selectedMonths.length>1?' – '+S.selectedMonths[S.selectedMonths.length-1]:'');
+  document.getElementById('table-period-label').textContent = 'DRE — ' + label;
+}
+
+/* ── KPIs ── */
+function renderKPIs() {
+  const ms = S.selectedMonths;
+  const hasProj = S.projRows.length > 0;
+
+  const sumReal = row => ms.reduce((a,m) => a + (row.vals[m] || 0), 0);
+  const sumOrc  = row => ms.reduce((a,m) => a + (getOrcadoForMonth(row.cat, m) || 0), 0);
+
+  const find = prefix => S.dreRows.find(r => r.cat.startsWith(prefix));
+
+  const rec   = find('01T');
+  const deduc = find('02 ');
+  const recLiq= find('02T');
+  const lb    = find('03T');
+  const lopR  = find('04T') || find('Lucro / Prejuízo Operacional');
+  const lliq  = find('06T') || find('Lucro / Prejuízo Líquido');
+  const lfin  = find('07T') || find('Lucro / Prejuízo Final');
+
+  const recReal  = rec   ? sumReal(rec)   : 0;
+  const recOrc   = rec   ? sumOrc(rec)    : null;
+  const lopReal  = lopR  ? sumReal(lopR)  : 0;
+  const lopOrc   = lopR  ? sumOrc(lopR)   : null;
+  const lliqReal = lliq  ? sumReal(lliq)  : 0;
+  const lliqOrc  = lliq  ? sumOrc(lliq)   : null;
+  const lfinReal = lfin  ? sumReal(lfin)  : 0;
+  const lfinOrc  = lfin  ? sumOrc(lfin)   : null;
+
+  const lopMarg  = recReal ? (lopReal  / Math.abs(recReal) * 100) : 0;
+  const lliqMarg = recReal ? (lliqReal / Math.abs(recReal) * 100) : 0;
+  const lopMargOrc = recOrc ? (lopOrc / Math.abs(recOrc) * 100) : null;
+  const lliqMargOrc= lliqOrc ? (lliqOrc / Math.abs(lliqOrc) * 100) : null;
+
+  const kpis = [
+    {
+      label:'Receita Bruta',
+      real: recReal, orc: recOrc,
+      fmt: fmtK, isRevenue: true,
+      sub: ms.length + (ms.length===1?' mês':' meses')
+    },
+    {
+      label:'Margem Operacional',
+      real: lopMarg, orc: lopMargOrc,
+      fmt: v => fmtPct(v/100), isRevenue: true,
+      sub: 'Lucro Op.: '+fmtK(lopReal)
+    },
+    {
+      label:'Margem Líquida',
+      real: lliqMarg, orc: lliqMargOrc,
+      fmt: v => fmtPct(v/100), isRevenue: true,
+      sub: 'Lucro Líq.: '+fmtK(lliqReal)
+    },
+    {
+      label:'Resultado Final',
+      real: lfinReal, orc: lfinOrc,
+      fmt: fmtK, isRevenue: true,
+      sub: lfinReal >= 0 ? '● Lucro no período' : '● Prejuízo no período'
+    },
+  ];
+
+  document.getElementById('kpi-grid').innerHTML = kpis.map(k => {
+    const hasOrc = k.orc !== null && k.orc !== undefined && !isNaN(k.orc);
+    let varRS = hasOrc ? (k.real - k.orc) : null;
+    let varPct = (hasOrc && k.orc !== 0) ? ((k.real - k.orc) / Math.abs(k.orc) * 100) : null;
+
+    // For monetary values, varRS is already in R$; for % margins it's in pp
+    const isPos = k.isRevenue ? (varRS >= 0) : (varRS <= 0);
+    const cls = varRS === null ? 'neu' : (isPos ? 'pos' : 'neg');
+    const arrow = varRS === null ? '' : (varRS >= 0 ? '▲ ' : '▼ ');
+
+    return `<div class="kpi">
+      <div class="kpi-label">${k.label}</div>
+      <div class="kpi-value">${k.fmt(k.real)}</div>
+      ${hasOrc ? `<div class="kpi-orc">Orçado: ${k.fmt(k.orc)}</div>` : '<div class="kpi-orc">—</div>'}
+      <div class="kpi-var-row">
+        ${varRS !== null ? `<span class="kpi-badge ${cls}">${arrow}${Math.abs(varPct).toFixed(1)}%</span>` : ''}
+        ${varRS !== null ? `<span class="kpi-badge ${cls}">${arrow}${fmtK(Math.abs(varRS))}</span>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ── DRE TABLE ── */
+function renderDRETable() {
+  const ms = S.selectedMonths;
+  const hasProj = S.projRows.length > 0;
+  const rows = S.viewMode === 'summary'
+    ? S.dreRows.filter(r => SUMMARY_PREFIXES.some(p => r.cat.startsWith(p)))
+    : S.dreRows;
+
+  document.getElementById('table-rows-count').textContent = rows.length + ' linhas';
+
+  // ── Super header (month groups + Acumulado) ──
+  let superH = '<tr class="super-header"><th></th>';
+  ms.forEach(m => {
+    superH += `<th colspan="${hasProj?6:1}" class="sep">${m}</th>`;
+  });
+  superH += `<th colspan="${hasProj?6:1}" class="sep" style="color:var(--amber)">Acumulado</th>`;
+  superH += '</tr>';
+
+  // ── Sub header ──
+  const colLabels = hasProj
+    ? ['Orçado R$','AV Orç','Realizado R$','AV Real','Var R$','Var %']
+    : ['Realizado R$'];
+  let subH = '<tr class="sub-header"><th>Categoria</th>';
+  const allGroups = [...ms, '__acc__'];
+  allGroups.forEach((_,gi) => {
+    colLabels.forEach((l,ci) => {
+      const sepCls = ci===0 ? 'sep' : '';
+      subH += `<th class="${sepCls}">${l}</th>`;
+    });
+  });
+  subH += '</tr>';
+
+  // ── Body ──
+  let body = '';
+  rows.forEach(row => {
+    const isTotal = /^0\dT /.test(row.cat) || /^Lucro/.test(row.cat);
+    const isGroup = !isTotal && /^0[1-9] /.test(row.cat);
+    const isSubcat = !isTotal && !isGroup && /^\d{2}\.\d/.test(row.cat);
+    const isLeaf   = !isTotal && !isGroup && !isSubcat;
+
+    let cls = '';
+    if (isTotal) cls='row-total';
+    else if (isGroup) cls='row-group';
+    else if (isSubcat) cls='row-sub';
+    else cls='row-leaf';
+
+    const isRev = isRevenueRow(row.cat);
+
+    // Accumulate across selected months
+    let accReal = 0, accOrc = 0;
+    let accRecReal = 0; // for AV calculation (revenue base)
+
+    // Get revenue totals for AV
+    const recRow = S.dreRows.find(r => r.cat.startsWith('01T'));
+    const accRecTotal = recRow ? ms.reduce((a,m) => a+(recRow.vals[m]||0),0) : 0;
+
+    body += `<tr class="${cls}"><td title="${row.cat}">${row.cat}</td>`;
+
+    ms.forEach(m => {
+      const real = row.vals[m];
+      const orc  = hasProj ? getOrcadoForMonth(row.cat, m) : null;
+      accReal += real || 0;
+      accOrc  += orc  || 0;
+
+      // AV base = revenue of that month
+      const recRowMonthReal = recRow ? (recRow.vals[m] || 0) : 0;
+      const recRowMonthOrc  = hasProj && recRow ? (getOrcadoForMonth(recRow.cat, m) || 0) : 0;
+
+      if (hasProj) {
+        const avOrc  = recRowMonthOrc  ? ((orc  || 0) / Math.abs(recRowMonthOrc)  * 100) : null;
+        const avReal = recRowMonthReal ? ((real || 0) / Math.abs(recRowMonthReal) * 100) : null;
+        const varRS  = (real !== null && orc !== null) ? real - orc : null;
+        const varPct = (varRS !== null && orc !== 0) ? (varRS / Math.abs(orc) * 100) : null;
+
+        // Color logic
+        const posForCat = isRev ? (varRS >= 0) : (varRS <= 0);
+        const varCls = varRS === null ? 'cv-zero' : (posForCat ? 'cv-pos' : 'cv-neg');
+
+        body += `<td class="cv-orc sep-l">${orc!==null?fmtK(orc):'—'}</td>`;
+        body += `<td class="cv-av">${avOrc!==null?fmtPct(avOrc/100):'—'}</td>`;
+        body += `<td class="cv-real">${real!==null?fmtK(real):'—'}</td>`;
+        body += `<td class="cv-av">${avReal!==null?fmtPct(avReal/100):'—'}</td>`;
+        body += `<td class="${varCls}">${varRS!==null?fmtK(varRS):'—'}</td>`;
+        body += `<td class="${varCls}">${varPct!==null?(varPct>=0?'▲ ':'▼ ')+Math.abs(varPct).toFixed(1)+'%':'—'}</td>`;
+      } else {
+        body += `<td class="cv-real sep-l">${real!==null?fmtK(real):'—'}</td>`;
+      }
+    });
+
+    // Acumulado columns
+    if (hasProj) {
+      const avOrcAcc  = accRecTotal ? (accOrc  / Math.abs(accRecTotal) * 100) : null;
+      const avRealAcc = accRecTotal ? (accReal / Math.abs(accRecTotal) * 100) : null;
+      const varRSacc  = accReal - accOrc;
+      const varPctAcc = accOrc ? (varRSacc / Math.abs(accOrc) * 100) : null;
+      const posAcc = isRev ? (varRSacc >= 0) : (varRSacc <= 0);
+      const clsAcc = posAcc ? 'cv-pos' : 'cv-neg';
+
+      body += `<td class="cv-orc sep-l acc-sep">${fmtK(accOrc)}</td>`;
+      body += `<td class="cv-av">${avOrcAcc!==null?fmtPct(avOrcAcc/100):'—'}</td>`;
+      body += `<td class="cv-real">${fmtK(accReal)}</td>`;
+      body += `<td class="cv-av">${avRealAcc!==null?fmtPct(avRealAcc/100):'—'}</td>`;
+      body += `<td class="${clsAcc}">${fmtK(varRSacc)}</td>`;
+      body += `<td class="${clsAcc}">${varPctAcc!==null?(varPctAcc>=0?'▲ ':'▼ ')+Math.abs(varPctAcc).toFixed(1)+'%':'—'}</td>`;
+    } else {
+      const total = row.total !== null ? row.total : accReal;
+      body += `<td class="cv-real sep-l acc-sep">${fmtK(total)}</td>`;
+    }
+
+    body += '</tr>';
+  });
+
+  document.getElementById('table-scroller').innerHTML =
+    `<table class="dre"><thead>${superH}${subH}</thead><tbody>${body}</tbody></table>`;
+}
+
+/* ═══════════════════════════════════════════════════════
+   PROJECTIONS IMPORT
+═══════════════════════════════════════════════════════ */
+function importProjecoes(input) {
+  const f = input.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = e => {
+    try {
+      const wb = XLSX.read(e.target.result, {type:'binary'});
+      const raw = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1, defval:null});
+      parseProjecoes(raw);
+    } catch(err) { alert('Erro ao ler arquivo: '+err.message); }
+  };
+  r.readAsBinaryString(f);
+  input.value = '';
+}
+
+function parseProjecoes(raw) {
+  let hdr = -1;
+  for (let i=0;i<raw.length;i++) {
+    const row=raw[i]; if(!row) continue;
+    if (row.some(c=>c&&/categori/i.test(String(c))) && row.some(c=>c&&/jan|fev|mar/i.test(String(c)))) {
+      hdr=i; break;
+    }
+  }
+  if (hdr<0) hdr=0;
+
+  const header=raw[hdr];
+  let colCat=header.findIndex(c=>c&&/categori/i.test(String(c)));
+  if (colCat<0) colCat=0;
+  let colPrev=header.findIndex(c=>c&&/previsão|previsao/i.test(String(c)));
+
+  const mCols=[];
+  header.forEach((c,i)=>{
+    if (c && MONTHS_PT.some(m=>String(c).trim().toLowerCase().startsWith(m.toLowerCase()))) mCols.push(i);
+  });
+
+  const rows=[];
+  let recRow=null;
+
+  for (let i=hdr+1;i<raw.length;i++) {
+    const row=raw[i]; if(!row) continue;
+    const cat=row[colCat]; if(!cat||!String(cat).trim()) continue;
+    const catStr=String(cat).trim();
+    const prev = colPrev>=0 ? parseFloat(row[colPrev]) : null;
+    const months=mCols.map(ci=>{
+      const v=row[ci];
+      return (v!==null&&v!==undefined&&!isNaN(parseFloat(v)))?parseFloat(v):null;
+    });
+    rows.push({cat:catStr,prev,months});
+    if (/^01T|Receita Bruta de Vendas/.test(catStr)) recRow={cat:catStr,prev,months};
+  }
+
+  S.projRows=rows;
+
+  // Build monthly absolute revenues
+  S.projRevenues=Array(12).fill(null);
+  if (recRow) {
+    const hasAbs=recRow.months.some(v=>v!==null&&Math.abs(v)>100);
+    if (hasAbs) S.projRevenues=recRow.months;
+    else {
+      const avg=recRow.prev||0;
+      S.projRevenues=Array(12).fill(avg);
+    }
+  }
+
+  document.getElementById('proj-import').style.display='none';
+  document.getElementById('proj-dash').style.display='block';
+  document.getElementById('proj-sub-label').textContent=rows.length+' categorias · '+mCols.length+' meses';
+
+  renderProjecoes();
+  if (S.dreRows.length) renderPanorama();
+}
+
+function toggleAccumulado() {
+  S.showAccumulado = !S.showAccumulado;
+  const btn=document.getElementById('btn-acc');
+  btn.classList.toggle('active-btn', S.showAccumulado);
+  btn.textContent = S.showAccumulado ? '∑ Mensal' : '∑ Acumulado';
+  renderProjecoes();
+}
+
+function renderProjecoes() {
+  if (!S.projRows.length) return;
+  const rows = S.projRows.filter(r => !/^01T/.test(r.cat)); // 01T shown as revenue bars
+  const revs = S.projRevenues;
+  const hasRevs = revs.some(v=>v!==null&&v>0);
+
+  // Build table
+  let tHead='', tBody='';
+
+  if (S.showAccumulado) {
+    // Two super-cols per month, then accumulated
+    tHead = `<thead>
+      <tr>
+        <th rowspan="2" style="min-width:190px;text-align:left;padding-left:14px">Categoria</th>
+        ${MONTHS_PT.map((m,i)=>`<th colspan="2" class="month-grp sep" style="min-width:130px">${m}</th>`).join('')}
+        <th colspan="2" class="month-grp sep acc-sep" style="min-width:140px;color:var(--amber)">Acumulado</th>
+      </tr>
+      <tr>
+        ${MONTHS_PT.map(()=>`<th class="sep">R$</th><th>%</th>`).join('')}
+        <th class="sep acc-sep">R$</th><th>%</th>
+      </tr>
+    </thead>`;
+
+    tBody = '<tbody>';
+    rows.forEach(row => {
+      const isT = /^0\dT|^Lucro/.test(row.cat);
+      const cls = isT?'proj-total':(/^0[1-9] /.test(row.cat)?'proj-group':'');
+      let accR=0, accRevAcc=0;
+
+      let cells='';
+      row.months.forEach((pct,i)=>{
+        const rev=revs[i]||0;
+        const rs=pct!==null?rev*pct:null;
+        accR+=rs||0;
+        accRevAcc+=rev;
+        const isOrcRevRow=row.cat.includes('01T');
+        const rsDisp=rs!==null?fmtK(rs):'—';
+        const pctDisp=pct!==null?fmtPct(pct):'—';
+        cells+=`<td class="sep" style="color:var(--text)">${rsDisp}</td><td style="color:var(--muted)">${pctDisp}</td>`;
+      });
+
+      // Accumulated
+      const accPct=accRevAcc?accR/Math.abs(accRevAcc):null;
+      cells+=`<td class="sep acc-sep" style="color:var(--white);font-weight:700">${fmtK(accR)}</td>`;
+      cells+=`<td style="color:var(--gold)">${accPct!==null?fmtPct(accPct):'—'}</td>`;
+
+      tBody+=`<tr class="${cls}"><td title="${row.cat}">${row.cat}</td>${cells}</tr>`;
+    });
+    tBody+='</tbody>';
+
+  } else {
+    // Monthly view — 2 cols per month
+    tHead = `<thead>
+      <tr>
+        <th rowspan="2" style="min-width:190px;text-align:left;padding-left:14px">Categoria</th>
+        ${MONTHS_PT.map((m,i)=>`<th colspan="2" class="month-grp sep">${m}</th>`).join('')}
+      </tr>
+      <tr>
+        ${MONTHS_PT.map(()=>`<th class="sep">R$</th><th>%</th>`).join('')}
+      </tr>
+    </thead>`;
+
+    tBody='<tbody>';
+    rows.forEach(row=>{
+      const isT=/^0\dT|^Lucro/.test(row.cat);
+      const cls=isT?'proj-total':(/^0[1-9] /.test(row.cat)?'proj-group':'');
+      let cells='';
+      row.months.forEach((pct,i)=>{
+        const rev=revs[i]||0;
+        const rs=pct!==null?rev*pct:null;
+        cells+=`<td class="sep" style="color:var(--text)">${rs!==null?fmtK(rs):'—'}</td><td style="color:var(--muted)">${pct!==null?fmtPct(pct):'—'}</td>`;
+      });
+      tBody+=`<tr class="${cls}"><td title="${row.cat}">${row.cat}</td>${cells}</tr>`;
+    });
+    tBody+='</tbody>';
+  }
+
+  document.getElementById('proj-table').innerHTML = tHead + tBody;
+}
+
+/* ═══════════════════════════════════════════════════════
+   FORMATTERS
+═══════════════════════════════════════════════════════ */
+function fmtK(v) {
+  if (v===null||v===undefined||isNaN(v)) return '—';
+  const sign = v<0?'-':'';
+  const abs=Math.abs(v);
+  if (abs>=1e6) return sign+'R$ '+(abs/1e6).toFixed(2)+'M';
+  if (abs>=1e3) return sign+'R$ '+(abs/1e3).toFixed(1)+'k';
+  return sign+'R$ '+abs.toFixed(0);
+}
+
+function fmtPct(v) {
+  if (v===null||v===undefined||isNaN(v)) return '—';
+  return (v*100).toFixed(2)+'%';
+}
+</script>
+</body>
+</html>
