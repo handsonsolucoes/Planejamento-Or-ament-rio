@@ -82,20 +82,49 @@ input[type=file]{display:none}
 .mpill:hover{border-color:var(--gold-l);color:var(--gold)}
 .mpill.on{background:var(--gold-pale);border-color:var(--gold);color:var(--gold)}
 
-/* KPIs */
-.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-bottom:22px}
-.kpi{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 18px 14px;box-shadow:var(--shadow-sm);transition:box-shadow .2s,transform .2s;position:relative;overflow:hidden}
-.kpi:hover{box-shadow:var(--shadow-md);transform:translateY(-1px)}
-.kpi-bar{position:absolute;top:0;left:0;right:0;height:3px;border-radius:14px 14px 0 0}
-.kpi-ic{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;margin-bottom:10px}
-.kpi-lbl{font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px}
-.kpi-val{font-size:22px;font-weight:800;color:var(--text);letter-spacing:-.5px}
-.kpi-orc{font-size:10.5px;color:var(--muted);margin-top:3px;margin-bottom:8px}
-.kpi-bs{display:flex;gap:6px;flex-wrap:wrap}
-.badge{display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:6px;font-size:10px;font-weight:700}
-.badge.g{background:var(--green-bg);color:var(--green)}
-.badge.r{background:var(--red-bg);color:var(--red)}
-.badge.n{background:var(--surface3);color:var(--muted)}
+/* KPIs — professional cards */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px;margin-bottom:24px}
+.kpi{
+  background:var(--surface);border:1px solid var(--border);border-radius:10px;
+  padding:0;box-shadow:var(--shadow-sm);transition:box-shadow .2s,border-color .2s;
+  overflow:hidden;
+}
+.kpi:hover{box-shadow:var(--shadow-md);border-color:var(--border2)}
+.kpi-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 16px 0;
+}
+.kpi-lbl{font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.kpi-tag{
+  font-size:9px;font-weight:700;padding:2px 7px;border-radius:4px;
+  text-transform:uppercase;letter-spacing:.03em;
+}
+.kpi-tag.g{background:var(--green-bg);color:var(--green)}
+.kpi-tag.r{background:var(--red-bg);color:var(--red)}
+.kpi-body{padding:6px 16px 12px}
+.kpi-val{font-size:24px;font-weight:800;color:var(--text);letter-spacing:-.6px;line-height:1.15}
+.kpi-orc-row{
+  display:flex;align-items:baseline;gap:6px;margin-top:3px;
+  font-size:10.5px;color:var(--muted);
+}
+.kpi-orc-row b{color:var(--text2);font-weight:600}
+.kpi-delta-row{display:flex;gap:14px;margin-top:9px;padding-top:9px;border-top:1px solid var(--surface3)}
+.kpi-delta{display:flex;flex-direction:column;gap:1px}
+.kpi-delta-lbl{font-size:8.5px;color:var(--faint);text-transform:uppercase;letter-spacing:.05em;font-weight:700}
+.kpi-delta-val{font-size:12px;font-weight:700}
+.kpi-delta-val.g{color:var(--green)}
+.kpi-delta-val.r{color:var(--red)}
+.kpi-delta-val.n{color:var(--muted)}
+
+/* mini comparison chart (orçado x realizado bars) */
+.kpi-chart{padding:0 16px 14px}
+.kc-row{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+.kc-label{width:34px;font-size:9px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.03em;flex-shrink:0}
+.kc-track{flex:1;background:var(--surface3);border-radius:3px;height:14px;position:relative;overflow:hidden}
+.kc-fill{height:100%;border-radius:3px;transition:width .5s ease}
+.kc-fill.orc{background:#c7cedb}
+.kc-fill.real{background:var(--kpi-accent,#b8892a)}
+.kc-val{width:64px;text-align:right;font-size:9.5px;font-weight:700;color:var(--text2);flex-shrink:0;font-variant-numeric:tabular-nums}
 
 /* TABLE WRAPPER */
 .twrap{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:var(--shadow-sm)}
@@ -521,27 +550,77 @@ function renderKPIs(){
   const fnR=fRow?sR(fRow):0,fnO=fRow?sO(fRow):0;
   const lM=rR?(lR/Math.abs(rR)*100):0,lMo=rO?(lO/Math.abs(rO)*100):0;
   const qM=rR?(qR/Math.abs(rR)*100):0,qMo=rO?(qO/Math.abs(rO)*100):0;
+
   const kpis=[
-    {icon:'💰',lbl:'Receita Bruta',color:'#d97706',ibg:'#fef3c7',real:rR,orc:rO,isRev:true},
-    {icon:'📈',lbl:'Margem Operacional',color:'#2563eb',ibg:'#eff6ff',real:lM,orc:lMo,isRev:true,pct:true,sub:'Lucro Op.: '+fK(lR)},
-    {icon:'✨',lbl:'Margem Líquida',color:'#7c3aed',ibg:'#f5f3ff',real:qM,orc:qMo,isRev:true,pct:true,sub:'Líq.: '+fK(qR)},
-    {icon:'🏁',lbl:'Resultado Final',color:fnR>=0?'#15803d':'#dc2626',ibg:fnR>=0?'#f0fdf4':'#fff5f5',real:fnR,orc:fnO,isRev:true},
+    {lbl:'Receita Bruta',accent:'#b8892a',real:rR,orc:rO,pct:false},
+    {lbl:'Margem Operacional',accent:'#2563eb',real:lM,orc:lMo,pct:true,subReal:lR,subOrc:lO,subLbl:'Lucro Operacional'},
+    {lbl:'Margem Líquida',accent:'#7c3aed',real:qM,orc:qMo,pct:true,subReal:qR,subOrc:qO,subLbl:'Lucro Líquido'},
+    {lbl:'Resultado Final',accent:fnR>=0?'#15803d':'#dc2626',real:fnR,orc:fnO,pct:false},
   ];
+
   document.getElementById('kpis').innerHTML=kpis.map(k=>{
-    const d=k.real-k.orc;
-    const p=k.orc?(d/Math.abs(k.orc)*100):null;
-    const good=isGoodVariance('01T',d); // KPIs are always revenue-logic
-    const cls=p===null?'n':(good?'g':'r');
-    const arr=d>=0?'▲ ':'▼ ';
-    return `<div class="kpi">
-      <div class="kpi-bar" style="background:${k.color}"></div>
-      <div class="kpi-ic" style="background:${k.ibg}">${k.icon}</div>
-      <div class="kpi-lbl">${k.lbl}</div>
-      <div class="kpi-val">${k.pct?fP(k.real/100):fK(k.real)}</div>
-      <div class="kpi-orc">Orçado: ${k.pct?fP(k.orc/100):fK(k.orc)}${k.sub?'<br><span style="color:var(--muted)">'+k.sub+'</span>':''}</div>
-      <div class="kpi-bs">
-        ${p!==null?`<span class="badge ${cls}">${arr}${Math.abs(p).toFixed(1)}%</span>`:''}
-        <span class="badge ${cls}">${arr}${fK(Math.abs(d))}</span>
+    /* Monetary values used for the R$ delta — for margin KPIs this is the
+       underlying Lucro Operacional / Lucro Líquido in R$, NOT the % itself.
+       For Receita Bruta / Resultado Final, real/orc are already in R$. */
+    const moneyReal = k.subReal!==undefined ? k.subReal : k.real;
+    const moneyOrc  = k.subOrc!==undefined  ? k.subOrc  : k.orc;
+    const dMoney = moneyReal - moneyOrc;            // Var. R$  (always R$ − R$)
+
+    /* Percentage delta: for margin KPIs, this is in percentage POINTS
+       (e.g. 18.4% real vs 15.0% orçado = +3.4 p.p.). For R$-only KPIs,
+       it's the relative % variation vs orçado. */
+    const dPct = k.pct
+      ? (k.real - k.orc)                              // p.p. difference
+      : (k.orc ? ((k.real-k.orc)/Math.abs(k.orc)*100) : null); // relative %
+
+    const good = isGoodVariance('', dMoney);
+    const cls = good ? 'g' : 'r';            // used for header tag (driven by dMoney)
+    const clsMoney = (dMoney>=0) ? 'g' : 'r'; // Var. R$ badge — own sign
+    const clsPct   = (dPct===null) ? 'n' : (dPct>=0 ? 'g' : 'r'); // Var. %/p.p. badge — own sign
+    const tagArr = dMoney>=0 ? '+' : '−';
+
+    /* main value display */
+    const mainVal=k.pct?fP(k.real/100):fK(k.real);
+    const orcVal=k.pct?fP(k.orc/100):fK(k.orc);
+
+    /* tag in header shows the relative % (most intuitive at-a-glance figure) */
+    const tagPct = k.pct ? (k.orc? ((k.real-k.orc)/Math.abs(k.orc)*100) : null) : dPct;
+
+    /* comparison bar chart: always in monetary terms */
+    const chartMax  = Math.max(Math.abs(moneyReal),Math.abs(moneyOrc),1);
+    const orcPctW   = Math.max(Math.abs(moneyOrc)/chartMax*100, 2);
+    const realPctW  = Math.max(Math.abs(moneyReal)/chartMax*100, 2);
+
+    return `<div class="kpi" style="--kpi-accent:${k.accent}">
+      <div class="kpi-head">
+        <span class="kpi-lbl">${k.lbl}</span>
+        <span class="kpi-tag ${cls}">${tagArr} ${tagPct!==null?Math.abs(tagPct).toFixed(1)+'%':fK(Math.abs(dMoney))}</span>
+      </div>
+      <div class="kpi-body">
+        <div class="kpi-val">${mainVal}</div>
+        <div class="kpi-orc-row">Orçado: <b>${orcVal}</b></div>
+        <div class="kpi-delta-row">
+          <div class="kpi-delta">
+            <span class="kpi-delta-lbl">Var. R$</span>
+            <span class="kpi-delta-val ${clsMoney}">${dMoney>=0?'+':''}${fK(dMoney)}</span>
+          </div>
+          <div class="kpi-delta">
+            <span class="kpi-delta-lbl">${k.pct?'Var. p.p.':'Var. %'}</span>
+            <span class="kpi-delta-val ${clsPct}">${dPct!==null?(dPct>=0?'+':'')+dPct.toFixed(1)+(k.pct?' p.p.':'%'):'—'}</span>
+          </div>
+        </div>
+      </div>
+      <div class="kpi-chart">
+        <div class="kc-row">
+          <span class="kc-label">Orç.</span>
+          <div class="kc-track"><div class="kc-fill orc" style="width:${orcPctW}%"></div></div>
+          <span class="kc-val">${fK(moneyOrc)}</span>
+        </div>
+        <div class="kc-row">
+          <span class="kc-label">Real</span>
+          <div class="kc-track"><div class="kc-fill real" style="width:${realPctW}%"></div></div>
+          <span class="kc-val">${fK(moneyReal)}</span>
+        </div>
       </div>
     </div>`;
   }).join('');
