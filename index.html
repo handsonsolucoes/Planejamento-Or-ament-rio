@@ -6,15 +6,14 @@
 <title>Dashboard Orçamentário 2026 — Hands On</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
-/* ══ TOKENS ══ */
 :root{
   --bg:#f4f6fb;--surface:#fff;--surface2:#f8f9fc;--surface3:#eef1f7;
   --border:#e3e8f0;--border2:#ced5e3;
   --gold:#b8892a;--gold-l:#d4a843;--gold-pale:#fdf8ed;--gold-bg:rgba(184,136,42,.07);
   --text:#1a2133;--text2:#3d4f6b;--muted:#7a8ba6;--faint:#b8c4d4;
-  --green:#15803d;--green-bg:rgba(21,128,61,.09);--green-bar:rgba(21,128,61,.18);
-  --red:#dc2626;--red-bg:rgba(220,38,38,.09);--red-bar:rgba(220,38,38,.18);
-  --amber:#d97706;--blue:#2563eb;
+  --green:#15803d;--green-bg:rgba(21,128,61,.09);
+  --red:#dc2626;--red-bg:rgba(220,38,38,.09);
+  --amber:#d97706;
   --shadow-sm:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
   --shadow-md:0 4px 14px rgba(0,0,0,.09),0 2px 4px rgba(0,0,0,.05);
 }
@@ -22,18 +21,13 @@
 html{scroll-behavior:smooth}
 body{font-family:'Inter','Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:12px;line-height:1.5}
 input[type=file]{display:none}
-/* scrollbar */
 ::-webkit-scrollbar{width:5px;height:5px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
 ::-webkit-scrollbar-thumb:hover{background:var(--gold-l)}
 
-/* ══ HEADER ══ */
-.header{
-  background:var(--text);height:56px;padding:0 28px;
-  display:flex;align-items:center;justify-content:space-between;
-  position:sticky;top:0;z-index:300;box-shadow:var(--shadow-md);
-}
+/* HEADER */
+.header{background:var(--text);height:56px;padding:0 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:300;box-shadow:var(--shadow-md)}
 .hl{display:flex;align-items:center;gap:12px}
 .logo-img{width:36px;height:36px;border-radius:50%;object-fit:contain;background:#000;flex-shrink:0}
 .hdiv{width:1px;height:26px;background:rgba(255,255,255,.15)}
@@ -41,75 +35,42 @@ input[type=file]{display:none}
 .hsub{font-size:10px;color:rgba(255,255,255,.45);margin-top:1px}
 .hbadge{background:var(--gold-bg);border:1px solid var(--gold-l);color:var(--gold-l);font-size:10.5px;font-weight:700;padding:3px 12px;border-radius:20px;letter-spacing:.04em}
 
-/* ══ IMPORT STRIP ══ */
-.istrip{
-  background:var(--surface);border-bottom:1px solid var(--border);
-  padding:9px 28px;display:flex;align-items:center;gap:18px;flex-wrap:wrap;
-}
+/* IMPORT STRIP */
+.istrip{background:var(--surface);border-bottom:1px solid var(--border);padding:9px 28px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
 .iitem{display:flex;align-items:center;gap:7px;font-size:11px}
 .idot{width:8px;height:8px;border-radius:50%;background:var(--border2);flex-shrink:0;transition:background .3s}
 .idot.ok{background:var(--green)}
 .ilabel{font-weight:700;color:var(--text2)}
 .istatus{color:var(--muted)}
 .isep{width:1px;height:16px;background:var(--border2);flex-shrink:0}
-.btn-swap{
-  display:inline-flex;align-items:center;gap:5px;
-  background:none;border:1px solid var(--border2);border-radius:6px;
-  color:var(--muted);font-size:10.5px;font-weight:600;cursor:pointer;font-family:inherit;
-  padding:4px 10px;transition:all .15s;
-}
+.btn-swap{display:inline-flex;align-items:center;gap:5px;background:none;border:1px solid var(--border2);border-radius:6px;color:var(--muted);font-size:10.5px;font-weight:600;cursor:pointer;font-family:inherit;padding:4px 10px;transition:all .15s}
 .btn-swap:hover{border-color:var(--gold);color:var(--gold)}
 
-/* ══ IMPORT SCREEN ══ */
-.iscreen{
-  min-height:calc(100vh - 56px);
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:24px;padding:40px 20px;
-}
+/* IMPORT SCREEN */
+.iscreen{min-height:calc(100vh - 56px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;padding:40px 20px}
 .icards{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;max-width:760px;width:100%}
-.icard{
-  background:var(--surface);border:1.5px dashed var(--border2);border-radius:16px;
-  padding:36px 40px;text-align:center;flex:1;min-width:240px;max-width:330px;
-  box-shadow:var(--shadow-sm);transition:border-color .2s,box-shadow .2s;
-}
+.icard{background:var(--surface);border:1.5px dashed var(--border2);border-radius:16px;padding:36px 40px;text-align:center;flex:1;min-width:240px;max-width:330px;box-shadow:var(--shadow-sm);transition:border-color .2s,box-shadow .2s}
 .icard:hover{border-color:var(--gold);box-shadow:var(--shadow-md)}
-.icnum{
-  width:30px;height:30px;border-radius:50%;
-  background:var(--gold-pale);border:1.5px solid var(--gold-l);
-  color:var(--gold);font-size:13px;font-weight:800;
-  display:flex;align-items:center;justify-content:center;margin:0 auto 14px;
-}
+.icnum{width:30px;height:30px;border-radius:50%;background:var(--gold-pale);border:1.5px solid var(--gold-l);color:var(--gold);font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
 .icard h3{font-size:14px;font-weight:700;color:var(--text);margin-bottom:6px}
 .icard p{font-size:11px;color:var(--muted);line-height:1.7;margin-bottom:18px}
-.btn-primary{
-  display:inline-flex;align-items:center;gap:6px;
-  background:var(--gold);color:#fff;border:none;border-radius:8px;
-  padding:9px 20px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;
-  box-shadow:0 2px 8px rgba(184,136,42,.3);transition:background .15s,transform .1s;
-}
+.btn-primary{display:inline-flex;align-items:center;gap:6px;background:var(--gold);color:#fff;border:none;border-radius:8px;padding:9px 20px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 2px 8px rgba(184,136,42,.3);transition:background .15s,transform .1s}
 .btn-primary:hover{background:var(--gold-l);transform:translateY(-1px)}
 .btn-primary.done{background:var(--green);box-shadow:0 2px 8px rgba(21,128,61,.3)}
 .ihint{font-size:11px;color:var(--muted);max-width:430px;text-align:center;line-height:1.8}
 .ihint strong{color:var(--gold)}
 
-/* ══ MAIN ══ */
+/* MAIN */
 .main{padding:20px 28px 60px}
-
-/* toolbar */
 .toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px}
 .ttitle{font-size:17px;font-weight:800;color:var(--text)}
 .tperiod{font-size:11px;color:var(--muted);margin-top:2px}
 .tr{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.btn{
-  display:inline-flex;align-items:center;gap:5px;
-  background:var(--surface);border:1px solid var(--border2);border-radius:7px;
-  color:var(--text2);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;
-  padding:7px 13px;box-shadow:var(--shadow-sm);transition:all .15s;
-}
+.btn{display:inline-flex;align-items:center;gap:5px;background:var(--surface);border:1px solid var(--border2);border-radius:7px;color:var(--text2);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;padding:7px 13px;box-shadow:var(--shadow-sm);transition:all .15s}
 .btn:hover{border-color:var(--gold);color:var(--gold)}
 .btn.active{background:var(--gold-pale);border-color:var(--gold);color:var(--gold)}
 
-/* month selector */
+/* MONTH SELECTOR */
 .msel{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:18px;box-shadow:var(--shadow-sm)}
 .msel-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
 .msel-t{font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
@@ -136,60 +97,48 @@ input[type=file]{display:none}
 .badge.r{background:var(--red-bg);color:var(--red)}
 .badge.n{background:var(--surface3);color:var(--muted)}
 
-/* ══ TABLE ══ */
+/* TABLE WRAPPER */
 .twrap{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:var(--shadow-sm)}
 .ttop{display:flex;align-items:center;justify-content:space-between;padding:11px 18px;border-bottom:1px solid var(--border);background:var(--surface2)}
 .ttop-t{font-size:12px;font-weight:700;color:var(--text)}
 .ttop-m{font-size:10px;color:var(--muted)}
 
-/* DUAL SCROLLBAR TRICK: top scroller */
-.scroll-top-wrap{overflow-x:auto;overflow-y:hidden;height:8px;border-bottom:1px solid var(--border)}
+/* DUAL SCROLL */
+.scroll-top-wrap{overflow-x:auto;overflow-y:hidden;height:8px;border-bottom:1px solid var(--border);background:var(--surface3)}
 .scroll-top-inner{height:1px}
 .scroll-bot-wrap{overflow-x:auto;overflow-y:hidden}
 
-/* table */
+/* TABLE */
 table.dre{width:100%;border-collapse:collapse;min-width:600px}
-/* sticky cat col */
 table.dre th:first-child,table.dre td:first-child{position:sticky;left:0;z-index:3}
 /* super header */
-table.dre thead tr.sh th{
-  background:var(--text);color:rgba(255,255,255,.6);
-  padding:7px 0;font-size:10px;font-weight:700;
-  text-align:center;text-transform:uppercase;letter-spacing:.06em;
-  border-bottom:1px solid rgba(255,255,255,.1);white-space:nowrap;
-}
+table.dre thead tr.sh th{background:var(--text);color:rgba(255,255,255,.6);padding:7px 0;font-size:10px;font-weight:700;text-align:center;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid rgba(255,255,255,.1);white-space:nowrap}
 table.dre thead tr.sh th:first-child{text-align:left;padding-left:16px;color:rgba(255,255,255,.3);background:var(--text)}
 table.dre thead tr.sh th.gold-h{color:#e8c97a;font-size:10.5px}
 /* sub header */
-table.dre thead tr.subh th{
-  background:#eceff6;color:var(--muted);
-  padding:6px 8px;font-size:9px;font-weight:700;
-  text-align:right;text-transform:uppercase;letter-spacing:.04em;
-  border-bottom:2px solid var(--border2);white-space:nowrap;
-}
+table.dre thead tr.subh th{background:#eceff6;color:var(--muted);padding:6px 8px;font-size:9px;font-weight:700;text-align:right;text-transform:uppercase;letter-spacing:.04em;border-bottom:2px solid var(--border2);white-space:nowrap}
 table.dre thead tr.subh th:first-child{text-align:left;padding-left:16px;background:#eceff6}
 table.dre thead tr.subh th.sl{border-left:1px solid var(--border)}
-/* body */
+/* body cells */
 table.dre tbody td{padding:6px 8px;text-align:right;font-size:11px;white-space:nowrap;border-bottom:1px solid rgba(0,0,0,.035)}
 table.dre tbody td:first-child{text-align:left;padding-left:16px;font-size:11.5px;font-weight:500;color:var(--text)}
 table.dre tbody tr:hover td{filter:brightness(.97)}
-/* col sep */
 .sl{border-left:1px solid var(--border)!important}
 .sl2{border-left:2px solid #d4a843!important}
-/* val types */
 .vo{color:var(--muted)}
 .vav{color:var(--faint);font-size:10px;font-style:italic}
 .vr{color:var(--text);font-weight:600}
-/* row bands */
-.r-01  td,.r-01  td:first-child{background:#fffef5}
-.r-02  td,.r-02  td:first-child{background:#fff8f8}
-.r-03  td,.r-03  td:first-child{background:#f5f8ff}
-.r-04  td,.r-04  td:first-child{background:#f8f5ff}
-.r-05  td,.r-05  td:first-child{background:#f5fffd}
-.r-06  td,.r-06  td:first-child{background:#f9f6ff}
-.r-07  td,.r-07  td:first-child{background:#f5f5ff}
-.r-08  td,.r-08  td:first-child{background:#fff8f0}
-.r-xx  td,.r-xx  td:first-child{background:var(--surface)}
+
+/* ROW BANDS */
+.r-01 td,.r-01 td:first-child{background:#fffef5}
+.r-02 td,.r-02 td:first-child{background:#fff8f8}
+.r-03 td,.r-03 td:first-child{background:#f5f8ff}
+.r-04 td,.r-04 td:first-child{background:#f8f5ff}
+.r-05 td,.r-05 td:first-child{background:#f5fffd}
+.r-06 td,.r-06 td:first-child{background:#f9f6ff}
+.r-07 td,.r-07 td:first-child{background:#f5f5ff}
+.r-08 td,.r-08 td:first-child{background:#fff8f0}
+.r-xx td,.r-xx td:first-child{background:var(--surface)}
 /* total rows */
 .rt-rec td{background:#fffbea!important;color:#92400e!important;font-weight:700!important;font-size:12px!important;border-top:1.5px solid #fcd34d!important;border-bottom:1.5px solid #fcd34d!important}
 .rt-rec td:first-child{background:#fffbea!important}
@@ -199,14 +148,33 @@ table.dre tbody tr:hover td{filter:brightness(.97)}
 .rt-grn td:first-child{background:#f0fdf4!important}
 .rt-red td{background:#fff5f5!important;color:#991b1b!important;font-weight:700!important;font-size:12px!important;border-top:1.5px solid #fca5a5!important;border-bottom:1.5px solid #fca5a5!important}
 .rt-red td:first-child{background:#fff5f5!important}
-/* indent */
+
+/* COLLAPSIBLE rows */
+table.dre tbody tr.collapsed{display:none}
+
+/* Toggle button in first cell */
+.tog{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:16px;height:16px;border-radius:4px;margin-right:6px;
+  background:rgba(0,0,0,.07);border:none;cursor:pointer;
+  font-size:9px;color:var(--text2);flex-shrink:0;
+  transition:background .15s,transform .15s;font-family:inherit;
+  vertical-align:middle;
+}
+.tog:hover{background:rgba(0,0,0,.13)}
+.tog.open{transform:rotate(0deg)}
+.tog.closed{transform:rotate(-90deg)}
+
+/* indent levels */
 .i1 td:first-child{padding-left:28px!important;font-size:11px!important;color:var(--text2)!important;font-weight:500!important}
 .i2 td:first-child{padding-left:44px!important;font-size:10.5px!important;color:var(--muted)!important;font-weight:400!important}
-/* data bar */
+
+/* DATA BAR */
 .bc{position:relative;padding:6px 8px!important}
 .bb{position:absolute;top:4px;bottom:4px;left:0;border-radius:0 3px 3px 0;z-index:0;min-width:2px}
 .bt{position:relative;z-index:1;font-size:10.5px;font-weight:700}
-/* legend */
+
+/* LEGEND */
 .legend{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
 .li{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--muted)}
 .ld{width:10px;height:10px;border-radius:2px;flex-shrink:0}
@@ -286,11 +254,11 @@ table.dre tbody tr:hover td{filter:brightness(.97)}
     </div>
     <div class="tr">
       <button class="btn" id="btn-acc" onclick="toggleAcc()">∑ Acumulado</button>
-      <button class="btn" id="btn-view" onclick="toggleView()">☰ Detalhado</button>
+      <button class="btn" onclick="expandAll()">⊞ Expandir tudo</button>
+      <button class="btn" onclick="collapseAll()">⊟ Recolher tudo</button>
     </div>
   </div>
 
-  <!-- month selector -->
   <div class="msel">
     <div class="msel-h">
       <span class="msel-t">📅 Período de Análise</span>
@@ -307,23 +275,15 @@ table.dre tbody tr:hover td{filter:brightness(.97)}
     <div class="mpills" id="mpills"></div>
   </div>
 
-  <!-- KPIs -->
   <div class="kpis" id="kpis"></div>
-
-  <!-- Legend -->
   <div class="legend" id="legend"></div>
 
-  <!-- Table -->
   <div class="twrap">
     <div class="ttop">
       <span class="ttop-t" id="tbl-label">DRE — Comparativo Plan × Real</span>
       <span class="ttop-m" id="tbl-meta"></span>
     </div>
-    <!-- TOP scrollbar (mirrors bottom) -->
-    <div class="scroll-top-wrap" id="scroll-top">
-      <div class="scroll-top-inner" id="scroll-top-inner"></div>
-    </div>
-    <!-- BOTTOM scrollbar + table -->
+    <div class="scroll-top-wrap" id="scroll-top"><div class="scroll-top-inner" id="scroll-top-inner"></div></div>
     <div class="scroll-bot-wrap" id="scroll-bot">
       <table class="dre" id="dre-tbl"></table>
     </div>
@@ -334,24 +294,24 @@ table.dre tbody tr:hover td{filter:brightness(.97)}
 /* ══ STATE ══ */
 const S={
   dreRows:[],dreMonths:[],sel:[],
-  projRows:[],projRevenues:[],projPercs:{},
-  viewMode:'summary',accMode:false,
-  dreOk:false,projOk:false
+  projRows:[],projRevenues:[],
+  accMode:false,
+  dreOk:false,projOk:false,
+  /* collapse state: groupKey -> bool (true=expanded) */
+  collapseState:{}
 };
 const MPTS=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-const SUMM=['01T','02T','03T','04T','05 ','06 ','07T','08T',
-  'Lucro / Prejuízo Operacional','Lucro / Prejuízo Líquido','Lucro / Prejuízo Final'];
 
 /* ══ SCROLL SYNC ══ */
 function initScrollSync(){
   const top=document.getElementById('scroll-top');
   const bot=document.getElementById('scroll-bot');
-  top.addEventListener('scroll',()=>{ if(!top._syncing){bot._syncing=true;bot.scrollLeft=top.scrollLeft;bot._syncing=false;}});
-  bot.addEventListener('scroll',()=>{ if(!bot._syncing){top._syncing=true;top.scrollLeft=bot.scrollLeft;top._syncing=false;}});
+  top.addEventListener('scroll',()=>{if(!top._s){bot._s=true;bot.scrollLeft=top.scrollLeft;bot._s=false;}});
+  bot.addEventListener('scroll',()=>{if(!bot._s){top._s=true;top.scrollLeft=bot.scrollLeft;top._s=false;}});
 }
-function updateTopScrollWidth(){
-  const tbl=document.getElementById('dre-tbl');
-  document.getElementById('scroll-top-inner').style.width=tbl.scrollWidth+'px';
+function updateTopW(){
+  const t=document.getElementById('dre-tbl');
+  document.getElementById('scroll-top-inner').style.width=t.scrollWidth+'px';
 }
 
 /* ══ DRE IMPORT ══ */
@@ -359,10 +319,8 @@ function importDRE(inp){
   const f=inp.files[0];if(!f)return;
   const r=new FileReader();
   r.onload=e=>{
-    try{
-      const wb=XLSX.read(e.target.result,{type:'binary'});
-      const raw=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,defval:null});
-      parseDRE(raw,f.name);
+    try{const wb=XLSX.read(e.target.result,{type:'binary'});
+      parseDRE(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,defval:null}),f.name);
     }catch(e){alert('Erro DRE: '+e.message);}
   };
   r.readAsBinaryString(f);inp.value='';
@@ -376,8 +334,7 @@ function parseDRE(raw,fname){
     if(ci>=0&&row.some(c=>c&&mRx.test(String(c).trim()))){hdr=i;cCat=ci;break;}
   }
   if(hdr<0){cCat=0;hdr=0;}
-  const header=raw[hdr];
-  const months=[],mCols=[];
+  const header=raw[hdr],months=[],mCols=[];
   header.forEach((c,ci)=>{if(c&&mRx.test(String(c).trim())){months.push(String(c).trim());mCols.push(ci);}});
   const tCol=header.findIndex(c=>c&&/acumulado|total/i.test(String(c)));
   const rows=[];
@@ -391,6 +348,8 @@ function parseDRE(raw,fname){
     rows.push({cat:cs,vals,tot});
   }
   S.dreRows=rows;S.dreMonths=months;S.sel=[...months];S.dreOk=true;
+  /* init collapse state: all groups start expanded */
+  S.collapseState={};
   document.getElementById('dot-dre').classList.add('ok');
   document.getElementById('st-dre').textContent=fname.replace(/\.(xlsx?)$/i,'').substring(0,28)+'…';
   document.getElementById('btn-dre').textContent='✓ '+months.length+' meses';
@@ -399,97 +358,54 @@ function parseDRE(raw,fname){
   buildPills();tryShow();
 }
 
-/* ══ PROJ IMPORT ══
-   New format: header row 0 = [blank, Acumulado, blank, Jan, blank, Fev, blank, ...]
-               header row 1 = [Categorias, Previsão R$, Previsão %, R$, %, R$, %, ...]
-   We need to find: col for category, then pairs (R$, %) for each month
-*/
+/* ══ PROJ IMPORT ══ */
 function importProj(inp){
   const f=inp.files[0];if(!f)return;
   const r=new FileReader();
   r.onload=e=>{
-    try{
-      const wb=XLSX.read(e.target.result,{type:'binary'});
-      const raw=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,defval:null});
-      parseProj(raw,f.name);
+    try{const wb=XLSX.read(e.target.result,{type:'binary'});
+      parseProj(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,defval:null}),f.name);
     }catch(e){alert('Erro Projeções: '+e.message);}
   };
   r.readAsBinaryString(f);inp.value='';
 }
 function parseProj(raw,fname){
-  /* Find the sub-header row: has 'Categorias' and 'Previsão R$' or 'R$' repeated */
   let subHdrIdx=-1,cCat=-1;
   for(let i=0;i<raw.length;i++){
     const row=raw[i];if(!row)continue;
     const ci=row.findIndex(c=>c&&/^categori/i.test(String(c).trim()));
     if(ci>=0){subHdrIdx=i;cCat=ci;break;}
   }
-  if(subHdrIdx<0){alert('Não encontrei cabeçalho com "Categorias" no arquivo de projeções.');return;}
-
-  /* Super-header (row above): month names */
-  const superRow=subHdrIdx>0?raw[subHdrIdx-1]:null;
+  if(subHdrIdx<0){alert('Cabeçalho "Categorias" não encontrado.');return;}
   const subRow=raw[subHdrIdx];
-
-  /* Build month col map: [{month, colRS, colPct}]
-     Strategy: walk superRow for month names, then in subRow find the R$/% cols starting at that position */
-  const monthCols=[]; // {month, colRS, colPct}
-
-  if(superRow){
-    // superRow has: blank, Acumulado, blank, Jan, blank, Fev, blank ...
-    // subRow has:   Categorias, Previsão R$, Previsão %, R$, %, R$, %, ...
-    // skip first 3 cols (cat + acumulado pair), then pairs per month
-    let col=cCat+3; // skip cat + 2 acumulado cols
-    for(let i=0;i<MPTS.length;i++){
-      if(col+1>=subRow.length)break;
-      monthCols.push({month:MPTS[i],colRS:col,colPct:col+1});
-      col+=2;
-    }
-  } else {
-    // fallback: find R$ cols after cat
-    let col=cCat+1;
-    for(let i=0;i<MPTS.length;i++){
-      if(col+1>=subRow.length)break;
-      monthCols.push({month:MPTS[i],colRS:col,colPct:col+1});
-      col+=2;
-    }
+  const monthCols=[];
+  let col=cCat+3;
+  for(let i=0;i<MPTS.length;i++){
+    if(col+1>=subRow.length)break;
+    monthCols.push({month:MPTS[i],colRS:col,colPct:col+1});
+    col+=2;
   }
-
-  /* Acumulado cols (Previsão R$ and Previsão %) */
-  const colAccRS=cCat+1, colAccPct=cCat+2;
-
-  const rows=[];
-  let recRow=null;
+  const colAccRS=cCat+1,colAccPct=cCat+2;
+  const rows=[];let recRow=null;
   for(let i=subHdrIdx+1;i<raw.length;i++){
     const row=raw[i];if(!row)continue;
     const cat=row[cCat];if(!cat||!String(cat).trim())continue;
     const cs=String(cat).trim();
-    const months=monthCols.map(mc=>{
-      const vRS=row[mc.colRS];const vPct=row[mc.colPct];
-      return{
-        rs:(vRS!==null&&!isNaN(parseFloat(vRS)))?parseFloat(vRS):null,
-        pct:(vPct!==null&&!isNaN(parseFloat(vPct)))?parseFloat(vPct):null
-      };
-    });
+    const months=monthCols.map(mc=>({
+      rs:(row[mc.colRS]!==null&&!isNaN(parseFloat(row[mc.colRS])))?parseFloat(row[mc.colRS]):null,
+      pct:(row[mc.colPct]!==null&&!isNaN(parseFloat(row[mc.colPct])))?parseFloat(row[mc.colPct]):null
+    }));
     const accRS=(row[colAccRS]!==null&&!isNaN(parseFloat(row[colAccRS])))?parseFloat(row[colAccRS]):null;
-    const accPct=(row[colAccPct]!==null&&!isNaN(parseFloat(row[colAccPct])))?parseFloat(row[colAccPct]):null;
-    rows.push({cat:cs,months,accRS,accPct});
-    if(/^01T/.test(cs))recRow={cat:cs,months,accRS,accPct};
+    rows.push({cat:cs,months,accRS});
+    if(/^01T/.test(cs))recRow={cat:cs,months,accRS};
   }
-
   S.projRows=rows;
-  /* Build revenues per month: use RS directly from 01T row */
   S.projRevenues=Array(12).fill(null);
   if(recRow){
     recRow.months.forEach((m,i)=>{if(m.rs!==null)S.projRevenues[i]=m.rs;});
-    /* fill nulls from accRS / 12 */
     const avg=recRow.accRS?recRow.accRS/12:null;
     S.projRevenues=S.projRevenues.map(v=>v!==null?v:avg);
   }
-
-  /* Build percs map: cat -> [pct per month] */
-  S.projPercs={};
-  rows.forEach(r=>{S.projPercs[r.cat]=r.months.map(m=>m.pct);});
-
   S.projOk=true;
   document.getElementById('dot-proj').classList.add('ok');
   document.getElementById('st-proj').textContent=fname.replace(/\.(xlsx?)$/i,'').substring(0,28)+'…';
@@ -502,11 +418,10 @@ function tryShow(){
   if(!S.dreOk||!S.projOk)return;
   document.getElementById('iscreen').style.display='none';
   document.getElementById('dash').style.display='block';
-  initScrollSync();
-  renderAll();
+  initScrollSync();renderAll();
 }
 
-/* ══ MONTH PILLS ══ */
+/* ══ PILLS ══ */
 function buildPills(){
   document.getElementById('mpills').innerHTML=S.dreMonths.map(m=>
     `<div class="mpill on" data-m="${m}" onclick="togM('${m}')">${m}</div>`
@@ -519,30 +434,77 @@ function togM(m){
 }
 function syncPills(){document.querySelectorAll('.mpill').forEach(p=>p.classList.toggle('on',S.sel.includes(p.dataset.m)));}
 function sAll(){S.sel=[...S.dreMonths];syncPills();renderAll();}
-function sQ(q){const i={1:[0,1,2],2:[3,4,5],3:[6,7,8],4:[9,10,11]}[q];S.sel=S.dreMonths.filter((_,j)=>i.includes(j));if(!S.sel.length)S.sel=[...S.dreMonths];syncPills();renderAll();}
-function sS(s){const i=s===1?[0,1,2,3,4,5]:[6,7,8,9,10,11];S.sel=S.dreMonths.filter((_,j)=>i.includes(j));if(!S.sel.length)S.sel=[...S.dreMonths];syncPills();renderAll();}
+function sQ(q){const idxs={1:[0,1,2],2:[3,4,5],3:[6,7,8],4:[9,10,11]}[q];S.sel=S.dreMonths.filter((_,j)=>idxs.includes(j));if(!S.sel.length)S.sel=[...S.dreMonths];syncPills();renderAll();}
+function sS(s){const idxs=s===1?[0,1,2,3,4,5]:[6,7,8,9,10,11];S.sel=S.dreMonths.filter((_,j)=>idxs.includes(j));if(!S.sel.length)S.sel=[...S.dreMonths];syncPills();renderAll();}
 
-/* ══ ORCADO HELPER ══ */
+/* ══ ORCADO ══ */
 function getOrcRS(cat,mLabel){
-  /* Direct: find projRow by cat, then get RS for that month */
   const mi=MPTS.findIndex(m=>mLabel&&mLabel.toLowerCase().startsWith(m.toLowerCase()));
   if(mi<0)return null;
-  /* exact or prefix match */
   let pr=S.projRows.find(r=>r.cat===cat);
   if(!pr)pr=S.projRows.find(r=>cat.length>4&&r.cat.substring(0,Math.min(r.cat.length,8))===cat.substring(0,Math.min(cat.length,8)));
   if(!pr)return null;
-  const m=pr.months[mi];
-  return m?m.rs:null;
+  const mv=pr.months[mi];return mv?mv.rs:null;
+}
+
+/* ══ VARIANCE COLOR LOGIC ══
+   Regra única: varRS = Real − Orçado (usando os valores COMO ESTÃO na DRE,
+   ou seja, despesas/custos já vêm negativos, receitas vêm positivas).
+
+   Com essa convenção de sinal, "varRS >= 0" significa SEMPRE uma situação boa:
+   • Receita:  Real 1.2M, Orçado 1.0M → varRS = +200k → bom (vendeu mais)
+               Real 0.9M, Orçado 1.0M → varRS = -100k → ruim (vendeu menos)
+   • Despesa:  Orçado -50k, Real -45k → varRS = -45k-(-50k) = +5k  → bom (gastou menos)
+               Orçado -50k, Real -60k → varRS = -60k-(-50k) = -10k → ruim (gastou mais)
+
+   Ou seja: NÃO precisa inverter nada por categoria — a matemática do valor
+   assinado já resolve receita e despesa da forma correta automaticamente.
+*/
+function isGoodVariance(cat, varRS) {
+  if (varRS === null || varRS === undefined || isNaN(varRS)) return null;
+  return varRS >= 0;
 }
 
 /* ══ RENDER ══ */
 function toggleAcc(){S.accMode=!S.accMode;document.getElementById('btn-acc').classList.toggle('active',S.accMode);renderAll();}
-function toggleView(){S.viewMode=S.viewMode==='summary'?'detailed':'summary';document.getElementById('btn-view').textContent=S.viewMode==='summary'?'☰ Detalhado':'⊟ Resumo';renderAll();}
+
+function expandAll(){
+  document.querySelectorAll('tr[data-group]').forEach(tr=>{
+    const g=tr.dataset.group;S.collapseState[g]=true;
+  });
+  applyCollapse();
+}
+function collapseAll(){
+  document.querySelectorAll('tr[data-group]').forEach(tr=>{
+    const g=tr.dataset.group;S.collapseState[g]=false;
+  });
+  applyCollapse();
+}
+function toggleGroup(groupKey){
+  S.collapseState[groupKey]=!S.collapseState[groupKey];
+  applyCollapse();
+}
+function applyCollapse(){
+  document.querySelectorAll('tr[data-group]').forEach(tr=>{
+    const g=tr.dataset.group;
+    const open=S.collapseState[g]!==false; // default open
+    const btn=tr.querySelector('.tog');
+    if(btn){btn.textContent=open?'▼':'▶';btn.classList.toggle('closed',!open);}
+  });
+  document.querySelectorAll('tr[data-parent]').forEach(tr=>{
+    const parents=tr.dataset.parent.split(',');
+    // row is visible if ALL parent groups are expanded
+    const visible=parents.every(g=>S.collapseState[g]!==false);
+    tr.classList.toggle('collapsed',!visible);
+  });
+}
+
 function renderAll(){
+  if(!S.dreOk||!S.projOk)return;
   const ms=S.sel;
   const label=ms.length===S.dreMonths.length?'Acumulado Anual':(ms.length===1?ms[0]:ms[0]+' – '+ms[ms.length-1]);
   document.getElementById('d-period').textContent=label+' · '+ms.length+(ms.length===1?' mês':' meses');
-  document.getElementById('tbl-label').textContent='DRE — '+(S.accMode?'Acumulado':'Comparativo Plan × Real')+' | '+label;
+  document.getElementById('tbl-label').textContent='DRE — '+(S.accMode?'Acumulado':' Comparativo Plan × Real')+' | '+label;
   renderKPIs();renderTable();
 }
 
@@ -552,32 +514,26 @@ function renderKPIs(){
   const sR=row=>ms.reduce((a,m)=>a+(row.vals[m]||0),0);
   const sO=row=>ms.reduce((a,m)=>a+(getOrcRS(row.cat,m)||0),0);
   const f=p=>S.dreRows.find(r=>r.cat.startsWith(p));
-  const rec=f('01T'),lopR=f('04T'),lliq=f('07T'),lfin=f('08T')||f('07T');
-  // fallback for final
-  const findFin=()=>f('08T')||S.dreRows.find(r=>/Lucro.*Final/i.test(r.cat));
-  const fRow=findFin();
-
+  const rec=f('01T'),lopR=f('04T'),lliq=f('07T'),fRow=f('08T')||S.dreRows.find(r=>/Lucro.*Final/i.test(r.cat));
   const rR=rec?sR(rec):0,rO=rec?sO(rec):0;
   const lR=lopR?sR(lopR):0,lO=lopR?sO(lopR):0;
   const qR=lliq?sR(lliq):0,qO=lliq?sO(lliq):0;
   const fnR=fRow?sR(fRow):0,fnO=fRow?sO(fRow):0;
-
   const lM=rR?(lR/Math.abs(rR)*100):0,lMo=rO?(lO/Math.abs(rO)*100):0;
   const qM=rR?(qR/Math.abs(rR)*100):0,qMo=rO?(qO/Math.abs(rO)*100):0;
-
   const kpis=[
-    {icon:'💰',lbl:'Receita Bruta',color:'#d97706',ibg:'#fef3c7',real:rR,orc:rO,rev:true},
-    {icon:'📈',lbl:'Margem Operacional',color:'#2563eb',ibg:'#eff6ff',real:lM,orc:lMo,rev:true,pct:true,sub:'Lucro Op.: '+fK(lR)},
-    {icon:'✨',lbl:'Margem Líquida',color:'#7c3aed',ibg:'#f5f3ff',real:qM,orc:qMo,rev:true,pct:true,sub:'Líq.: '+fK(qR)},
-    {icon:'🏁',lbl:'Resultado Final',color:fnR>=0?'#15803d':'#dc2626',ibg:fnR>=0?'#f0fdf4':'#fff5f5',real:fnR,orc:fnO,rev:true},
+    {icon:'💰',lbl:'Receita Bruta',color:'#d97706',ibg:'#fef3c7',real:rR,orc:rO,isRev:true},
+    {icon:'📈',lbl:'Margem Operacional',color:'#2563eb',ibg:'#eff6ff',real:lM,orc:lMo,isRev:true,pct:true,sub:'Lucro Op.: '+fK(lR)},
+    {icon:'✨',lbl:'Margem Líquida',color:'#7c3aed',ibg:'#f5f3ff',real:qM,orc:qMo,isRev:true,pct:true,sub:'Líq.: '+fK(qR)},
+    {icon:'🏁',lbl:'Resultado Final',color:fnR>=0?'#15803d':'#dc2626',ibg:fnR>=0?'#f0fdf4':'#fff5f5',real:fnR,orc:fnO,isRev:true},
   ];
   document.getElementById('kpis').innerHTML=kpis.map(k=>{
     const d=k.real-k.orc;
     const p=k.orc?(d/Math.abs(k.orc)*100):null;
-    const good=k.rev?d>=0:d<=0;
+    const good=isGoodVariance('01T',d); // KPIs are always revenue-logic
     const cls=p===null?'n':(good?'g':'r');
     const arr=d>=0?'▲ ':'▼ ';
-    return`<div class="kpi">
+    return `<div class="kpi">
       <div class="kpi-bar" style="background:${k.color}"></div>
       <div class="kpi-ic" style="background:${k.ibg}">${k.icon}</div>
       <div class="kpi-lbl">${k.lbl}</div>
@@ -585,7 +541,7 @@ function renderKPIs(){
       <div class="kpi-orc">Orçado: ${k.pct?fP(k.orc/100):fK(k.orc)}${k.sub?'<br><span style="color:var(--muted)">'+k.sub+'</span>':''}</div>
       <div class="kpi-bs">
         ${p!==null?`<span class="badge ${cls}">${arr}${Math.abs(p).toFixed(1)}%</span>`:''}
-        ${`<span class="badge ${cls}">${arr}${fK(Math.abs(d))}</span>`}
+        <span class="badge ${cls}">${arr}${fK(Math.abs(d))}</span>
       </div>
     </div>`;
   }).join('');
@@ -600,56 +556,96 @@ function rowBand(cat){
   return'r-xx';
 }
 function totalCls(cat,val){
-  if(/^01T|Receita Bruta|Receita Líquida/.test(cat))return'rt-rec';
+  if(/^01T|Receita Líquida/.test(cat))return'rt-rec';
   if(/^03T|Lucro Bruto/.test(cat))return'rt-blu';
   return val>=0?'rt-grn':'rt-red';
 }
-const isRevCat=cat=>/^01T|^02T|Receita|Lucro/.test(cat);
+
+/* Determine row hierarchy level:
+   Level 0 = totals (xxT) → no toggle, no parent
+   Level 1 = groups (XX without dot, e.g. "03 ", "04 ") → has toggle button, parent = none
+   Level 2 = sub-groups (XX.Y) → has toggle button, parent = level1 group
+   Level 3 = leaves (no numeric prefix or deeper) → parent = nearest level1+level2
+*/
+function classifyRow(cat){
+  if(/^0\d T |^0\dT /.test(cat)||/T /.test(cat.substring(0,5)))return{level:0,isTotal:true};
+  if(/^0\d\.\d+ /.test(cat))return{level:2,isTotal:false};  // e.g. 04.1
+  if(/^0\d /.test(cat))return{level:1,isTotal:false};        // e.g. 03 
+  return{level:3,isTotal:false};
+}
 
 function renderTable(){
   const ms=S.sel;
-  const rows=S.viewMode==='summary'?S.dreRows.filter(r=>SUMM.some(p=>r.cat.startsWith(p))):S.dreRows;
   const accOnly=S.accMode;
-
+  const rows=S.dreRows;
   document.getElementById('tbl-meta').textContent=rows.length+' linhas';
 
-  /* recRow for AV */
   const recRow=S.dreRows.find(r=>r.cat.startsWith('01T'));
   const accRecReal=recRow?ms.reduce((a,m)=>a+(recRow.vals[m]||0),0):0;
   const accRecOrc=recRow?ms.reduce((a,m)=>a+(getOrcRS(recRow.cat,m)||0),0):0;
 
-  /* collect all abs var% for scaling data bars */
+  /* scale for data bars */
   const allV=[];
-  rows.forEach(r=>{
-    ms.forEach(m=>{
-      const rv=r.vals[m],ov=getOrcRS(r.cat,m);
-      if(rv!==null&&ov!==null&&ov!==0)allV.push(Math.abs((rv-ov)/Math.abs(ov)*100));
-    });
-  });
+  rows.forEach(r=>{ms.forEach(m=>{const rv=r.vals[m],ov=getOrcRS(r.cat,m);if(rv!==null&&ov!==null&&ov!==0)allV.push(Math.abs((rv-ov)/Math.abs(ov)*100));});});
   const maxV=allV.length?Math.max(...allV,1):100;
 
   const COLS=['Orçado R$','AV Orç','Real R$','AV Real','Var R$','Var %'];
-
   let sh,subh;
   if(accOnly){
-    sh=`<tr class="sh"><th>Categoria</th><th colspan="6" class="gold-h sl">∑ Acumulado — ${ms.length===S.dreMonths.length?'Anual':ms[0]+(ms.length>1?' – '+ms[ms.length-1]:'')}</th></tr>`;
+    sh=`<tr class="sh"><th>Categoria</th><th colspan="6" class="gold-h sl">∑ Acumulado</th></tr>`;
     subh=`<tr class="subh"><th>Categoria</th>${COLS.map((l,i)=>`<th class="${i===0?'sl':''}">${l}</th>`).join('')}</tr>`;
   } else {
     sh=`<tr class="sh"><th>Categoria</th>${ms.map(m=>`<th colspan="6" class="sl">${m}</th>`).join('')}<th colspan="6" class="sl gold-h">∑ Acumulado</th></tr>`;
-    subh=`<tr class="subh"><th>Categoria</th>${[...ms,'__acc__'].map(()=>COLS.map((l,i)=>`<th class="${i===0?'sl':''}">${l}</th>`).join('')).join('')}</tr>`;
+    subh=`<tr class="subh"><th>Categoria</th>${[...ms,'__acc__'].map(()=>COLS.map((l,i)=>`<th class="${i===0?'sl':''}">${l}</th>`).join('')). join('')}</tr>`;
   }
 
+  /* Build rows tracking current parent groups for collapse */
   let body='';
-  rows.forEach(row=>{
-    const isT=/^0\dT |^Lucro/.test(row.cat)||/T$/.test(row.cat.split(' ')[0]);
-    const isG=!isT&&/^0[1-9] /.test(row.cat);
-    const isSub=!isT&&!isG&&/^\d{2}\.\d/.test(row.cat);
-    const rBand=isT?totalCls(row.cat,ms.reduce((a,m)=>a+(row.vals[m]||0),0)):rowBand(row.cat);
-    const indent=isSub?'i1':(!isT&&!isG?'i2':'');
-    const rev=isRevCat(row.cat);
+  let curL1=null; // current level-1 group key
+  let curL2=null; // current level-2 group key
 
+  rows.forEach((row,ri)=>{
+    const {level,isTotal}=classifyRow(row.cat);
+    const accVal=ms.reduce((a,m)=>a+(row.vals[m]||0),0);
+
+    /* Update parent tracking */
+    if(level===1){curL1='g_'+ri;curL2=null;}
+    else if(level===2){curL2='g_'+ri;}
+
+    /* row CSS classes */
+    let rBand=isTotal?totalCls(row.cat,accVal):rowBand(row.cat);
+    /* Dynamic total coloring */
+    if(isTotal&&!/^01T|Receita|^03T|Lucro Bruto/.test(row.cat))rBand=accVal>=0?'rt-grn':'rt-red';
+
+    let indCls='';
+    if(level===2)indCls='i1';
+    else if(level===3)indCls='i2';
+
+    /* data-group and data-parent attributes */
+    let groupAttr='',parentAttr='';
+    if(level===1||level===2){
+      const gk='g_'+ri;
+      if(S.collapseState[gk]===undefined)S.collapseState[gk]=true; // default expanded
+      groupAttr=`data-group="${gk}"`;
+    }
+    if(level===2&&curL1)parentAttr=`data-parent="${curL1}"`;
+    if(level===3){
+      const parents=[curL1,curL2].filter(Boolean).join(',');
+      if(parents)parentAttr=`data-parent="${parents}"`;
+    }
+
+    /* build the cat cell content */
+    let catContent=row.cat;
+    if(level===1||level===2){
+      const gk='g_'+ri;
+      const isOpen=S.collapseState[gk]!==false;
+      catContent=`<button class="tog ${isOpen?'open':'closed'}" onclick="toggleGroup('${gk}')">${isOpen?'▼':'▶'}</button>${row.cat}`;
+    }
+
+    /* compute values */
     let accR=0,accO=0;
-    body+=`<tr class="${rBand} ${indent}"><td>${row.cat}</td>`;
+    body+=`<tr class="${rBand} ${indCls}" ${groupAttr} ${parentAttr}>`;
+    body+=`<td>${catContent}</td>`;
 
     if(!accOnly){
       ms.forEach(m=>{
@@ -661,7 +657,7 @@ function renderTable(){
         const avR=mRecR?(rv||0)/Math.abs(mRecR)*100:null;
         const vRS=(rv!==null&&ov!==null)?rv-ov:null;
         const vP=(vRS!==null&&ov!==0)?vRS/Math.abs(ov)*100:null;
-        const good=rev?vRS>=0:vRS<=0;
+        const good=vRS!==null?isGoodVariance(row.cat,vRS):null;
         body+=`<td class="vo sl">${ov!==null?fK(ov):'—'}</td>`;
         body+=`<td class="vav">${avO!==null?fP(avO/100):'—'}</td>`;
         body+=`<td class="vr">${rv!==null?fK(rv):'—'}</td>`;
@@ -674,14 +670,13 @@ function renderTable(){
       accO=ms.reduce((a,m)=>a+(getOrcRS(row.cat,m)||0),0);
     }
 
-    /* acumulado */
     const avOA=accRecOrc?(accO/Math.abs(accRecOrc)*100):null;
     const avRA=accRecReal?(accR/Math.abs(accRecReal)*100):null;
     const vRSA=accR-accO;
     const vPA=accO?(vRSA/Math.abs(accO)*100):null;
-    const goodA=rev?vRSA>=0:vRSA<=0;
-    const sepCls=accOnly?'sl':'sl2';
-    body+=`<td class="vo ${sepCls}">${fK(accO)}</td>`;
+    const goodA=isGoodVariance(row.cat,vRSA);
+    const sc=accOnly?'sl':'sl2';
+    body+=`<td class="vo ${sc}">${fK(accO)}</td>`;
     body+=`<td class="vav">${avOA!==null?fP(avOA/100):'—'}</td>`;
     body+=`<td class="vr">${fK(accR)}</td>`;
     body+=`<td class="vav">${avRA!==null?fP(avRA/100):'—'}</td>`;
@@ -691,13 +686,14 @@ function renderTable(){
   });
 
   document.getElementById('dre-tbl').innerHTML=`<thead>${sh}${subh}</thead><tbody>${body}</tbody>`;
-  setTimeout(updateTopScrollWidth,50);
+  applyCollapse();
+  setTimeout(updateTopW,50);
 
   /* legend */
   const li=[
     {c:'#fffef5',b:'#fcd34d',l:'Receita'},{c:'#fff8f8',b:'#fca5a5',l:'Deduções'},
     {c:'#f5f8ff',b:'#93c5fd',l:'Custos'},{c:'#f8f5ff',b:'#c4b5fd',l:'Despesas'},
-    {c:'#f5fffd',b:'#6ee7b7',l:'Financeiro'},{c:'#f0fdf4',b:'#86efac',l:'Lucro (+)'},
+    {c:'#f5fffd',b:'#6ee7b7',l:'Financeiro'},{c:'#f0fdf4',b:'#86efac',l:'Resultado (+)'},
     {c:'#fff5f5',b:'#fca5a5',l:'Resultado (−)'}
   ];
   document.getElementById('legend').innerHTML='<span style="font-size:10px;color:var(--muted);font-weight:700;margin-right:4px">Legenda:</span>'+
@@ -707,13 +703,12 @@ function renderTable(){
 function barCell(val,maxV,good,isPct){
   if(val===null||val===undefined||isNaN(val))return'<td class="bc"><span class="bt" style="color:var(--faint)">—</span></td>';
   const pct=Math.min(Math.abs(val)/(maxV||1)*100,100);
-  const col=good?'#15803d':'#dc2626';
-  const bg=good?'rgba(21,128,61,.15)':'rgba(220,38,38,.15)';
-  const txt=isPct?(val>=0?'▲ ':'▼ ')+Math.abs(val).toFixed(1)+'%':(val>=0?'▲ ':'▼ ')+fK(Math.abs(val));
-  return`<td class="bc"><div class="bb" style="background:${bg};width:${pct}%"></div><span class="bt" style="color:${col}">${txt}</span></td>`;
+  const col=good===null?'var(--faint)':good?'#15803d':'#dc2626';
+  const bg=good===null?'transparent':good?'rgba(21,128,61,.15)':'rgba(220,38,38,.15)';
+  const txt=isPct?(val>=0?'▲ ':'▼ ')+Math.abs(val).toFixed(1)+'%':(val>=0?'+ ':'− ')+fK(Math.abs(val));
+  return `<td class="bc"><div class="bb" style="background:${bg};width:${pct}%"></div><span class="bt" style="color:${col}">${txt}</span></td>`;
 }
 
-/* ══ FORMAT ══ */
 function fK(v){
   if(v===null||v===undefined||isNaN(v))return'—';
   const s=v<0?'-':'',a=Math.abs(v);
