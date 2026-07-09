@@ -70,6 +70,18 @@ input[type=file]{display:none}
 .btn:hover{border-color:var(--gold);color:var(--gold)}
 .btn.active{background:var(--gold-pale);border-color:var(--gold);color:var(--gold)}
 
+/* PROJECTION TARGET BANNER */
+.pbanner{
+  background:linear-gradient(90deg,var(--gold-pale),var(--surface));
+  border:1px solid var(--gold-l);border-left:4px solid var(--gold);
+  border-radius:10px;padding:11px 16px;margin-bottom:16px;
+  font-size:12px;font-weight:600;color:var(--text2);
+  box-shadow:var(--shadow-sm);line-height:1.6;
+}
+.pbanner b{color:var(--gold);font-weight:800}
+.pbanner.ok{background:linear-gradient(90deg,var(--green-bg),var(--surface));border-color:#86efac;border-left-color:var(--green)}
+.pbanner.ok b{color:var(--green)}
+
 /* MONTH SELECTOR */
 .msel{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:18px;box-shadow:var(--shadow-sm)}
 .msel-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
@@ -288,6 +300,8 @@ table.dre tbody tr.collapsed{display:none}
       <button class="btn" onclick="collapseAll()">⊟ Recolher tudo</button>
     </div>
   </div>
+
+  <div class="pbanner" id="pbanner" style="display:none"></div>
 
   <div class="msel">
     <div class="msel-h">
@@ -567,7 +581,44 @@ function renderAll(){
   const projTag=S.projFull?' · 🔮 Projeção Anual (Orçado 12 meses + Realizado anualizado)':'';
   document.getElementById('d-period').textContent=label+' · '+ms.length+(ms.length===1?' mês':' meses')+projTag;
   document.getElementById('tbl-label').textContent='DRE — '+(S.accMode?'Acumulado':' Comparativo Plan × Real')+(S.projFull?' · Projeção Anual':'')+' | '+label;
-  renderKPIs();renderTable();
+  renderKPIs();renderTable();renderTargetBanner();
+}
+
+/* ══ META DE FATURAMENTO — quanto falta faturar/mês nos meses restantes ══ */
+function renderTargetBanner(){
+  const el=document.getElementById('pbanner');
+  if(!el)return;
+  const recRow=S.dreRows.find(r=>r.cat.startsWith('01T'));
+  const months=(S.projMonths&&S.projMonths.length)?S.projMonths:MPTS;
+  if(!recRow||!months.length){el.style.display='none';return;}
+
+  const annualOrc=months.reduce((a,m)=>a+(getOrcRS(recRow.cat,m)||0),0);
+  const realizedSoFar=S.dreMonths.reduce((a,m)=>a+(recRow.vals[m]||0),0);
+  const monthsRemaining=Math.max(months.length-S.dreMonths.length,0);
+  const falta=annualOrc-realizedSoFar;
+
+  el.style.display='block';
+  el.classList.remove('ok');
+
+  if(annualOrc<=0){
+    el.style.display='none';return;
+  }
+  if(monthsRemaining<=0){
+    if(falta<=0){
+      el.classList.add('ok');
+      el.innerHTML=`✅ Meta orçada anual de <b>${fK(annualOrc)}</b> já foi atingida — faturamento realizado: <b>${fK(realizedSoFar)}</b>.`;
+    } else {
+      el.innerHTML=`⚠️ Todos os meses do orçamento já foram realizados e ainda falta <b>${fK(falta)}</b> para atingir a meta orçada anual de <b>${fK(annualOrc)}</b>.`;
+    }
+    return;
+  }
+  if(falta<=0){
+    el.classList.add('ok');
+    el.innerHTML=`✅ Meta orçada anual de <b>${fK(annualOrc)}</b> já foi atingida — faturamento realizado: <b>${fK(realizedSoFar)}</b>, com ${monthsRemaining} ${monthsRemaining===1?'mês restante':'meses restantes'}.`;
+    return;
+  }
+  const neededAvg=falta/monthsRemaining;
+  el.innerHTML=`📈 Para atingir a meta orçada anual de <b>${fK(annualOrc)}</b>, é necessário faturar em média <b>${fK(neededAvg)}/mês</b> nos ${monthsRemaining} ${monthsRemaining===1?'mês restante':'meses restantes'} <span style="color:var(--faint);font-weight:500">(já realizado: ${fK(realizedSoFar)} · faltam ${fK(falta)})</span>.`;
 }
 
 /* ══ KPIs ══ */
