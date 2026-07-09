@@ -283,6 +283,7 @@ table.dre tbody tr.collapsed{display:none}
     </div>
     <div class="tr">
       <button class="btn" id="btn-acc" onclick="toggleAcc()">∑ Acumulado</button>
+      <button class="btn" id="btn-projfull" onclick="toggleProjFull()" title="No acumulado, usa o orçado do ano inteiro e projeta o realizado com base na média mensal praticada até agora">🔮 Projetar Ano Completo</button>
       <button class="btn" onclick="expandAll()">⊞ Expandir tudo</button>
       <button class="btn" onclick="collapseAll()">⊟ Recolher tudo</button>
     </div>
@@ -323,8 +324,9 @@ table.dre tbody tr.collapsed{display:none}
 /* ══ STATE ══ */
 const S={
   dreRows:[],dreMonths:[],sel:[],
-  projRows:[],projRevenues:[],
+  projRows:[],projRevenues:[],projMonths:[],
   accMode:false,
+  projFull:false, // quando true: acumulado usa orçado do ano inteiro + realizado anualizado pela média até o momento
   dreOk:false,projOk:false,
   /* collapse state: groupKey -> bool (true=expanded) */
   collapseState:{}
@@ -429,6 +431,7 @@ function parseProj(raw,fname){
     if(/^01T/.test(cs))recRow={cat:cs,months,accRS};
   }
   S.projRows=rows;
+  S.projMonths=monthCols.map(mc=>mc.month);
   S.projRevenues=Array(12).fill(null);
   if(recRow){
     recRow.months.forEach((m,i)=>{if(m.rs!==null)S.projRevenues[i]=m.rs;});
@@ -476,6 +479,34 @@ function getOrcRS(cat,mLabel){
   const mv=pr.months[mi];return mv?mv.rs:null;
 }
 
+/* ══ ACUMULADO — normal x projeção anual ══
+   Modo normal: acumulado = soma dos meses selecionados (S.sel).
+   Modo "Projetar Ano Completo" (S.projFull):
+     • Orçado  = soma do orçado de TODOS os meses presentes na planilha de
+                 projeção (S.projMonths), independe do filtro de período e
+                 independe de quantos meses já foram realizados no DRE.
+     • Realizado = média mensal praticada nos meses já preenchidos (S.dreMonths),
+                   anualizada (média × 12) — ex: média 100k/mês → projeta 1.2M.
+*/
+function accRealVal(row){
+  if(S.projFull){
+    let sum=0,count=0;
+    S.dreMonths.forEach(m=>{
+      const v=row.vals[m];
+      if(v!==null&&v!==undefined){sum+=v;count++;}
+    });
+    return count?(sum/count)*12:0;
+  }
+  return S.sel.reduce((a,m)=>a+(row.vals[m]||0),0);
+}
+function accOrcVal(row){
+  if(S.projFull){
+    const months=S.projMonths&&S.projMonths.length?S.projMonths:MPTS;
+    return months.reduce((a,m)=>a+(getOrcRS(row.cat,m)||0),0);
+  }
+  return S.sel.reduce((a,m)=>a+(getOrcRS(row.cat,m)||0),0);
+}
+
 /* ══ VARIANCE COLOR LOGIC ══
    Regra única: varRS = Real − Orçado (usando os valores COMO ESTÃO na DRE,
    ou seja, despesas/custos já vêm negativos, receitas vêm positivas).
@@ -496,6 +527,7 @@ function isGoodVariance(cat, varRS) {
 
 /* ══ RENDER ══ */
 function toggleAcc(){S.accMode=!S.accMode;document.getElementById('btn-acc').classList.toggle('active',S.accMode);renderAll();}
+function toggleProjFull(){S.projFull=!S.projFull;document.getElementById('btn-projfull').classList.toggle('active',S.projFull);renderAll();}
 
 function expandAll(){
   document.querySelectorAll('tr[data-group]').forEach(tr=>{
@@ -532,16 +564,16 @@ function renderAll(){
   if(!S.dreOk||!S.projOk)return;
   const ms=S.sel;
   const label=ms.length===S.dreMonths.length?'Acumulado Anual':(ms.length===1?ms[0]:ms[0]+' – '+ms[ms.length-1]);
-  document.getElementById('d-period').textContent=label+' · '+ms.length+(ms.length===1?' mês':' meses');
-  document.getElementById('tbl-label').textContent='DRE — '+(S.accMode?'Acumulado':' Comparativo Plan × Real')+' | '+label;
+  const projTag=S.projFull?' · 🔮 Projeção Anual (Orçado 12 meses + Realizado anualizado)':'';
+  document.getElementById('d-period').textContent=label+' · '+ms.length+(ms.length===1?' mês':' meses')+projTag;
+  document.getElementById('tbl-label').textContent='DRE — '+(S.accMode?'Acumulado':' Comparativo Plan × Real')+(S.projFull?' · Projeção Anual':'')+' | '+label;
   renderKPIs();renderTable();
 }
 
 /* ══ KPIs ══ */
 function renderKPIs(){
-  const ms=S.sel;
-  const sR=row=>ms.reduce((a,m)=>a+(row.vals[m]||0),0);
-  const sO=row=>ms.reduce((a,m)=>a+(getOrcRS(row.cat,m)||0),0);
+  const sR=row=>accRealVal(row);
+  const sO=row=>accOrcVal(row);
   const f=p=>S.dreRows.find(r=>r.cat.startsWith(p));
   const rec=f('01T'),lopR=f('04T'),lliq=f('07T'),fRow=f('08T')||S.dreRows.find(r=>/Lucro.*Final/i.test(r.cat));
   const rR=rec?sR(rec):0,rO=rec?sO(rec):0;
@@ -660,8 +692,8 @@ function renderTable(){
   document.getElementById('tbl-meta').textContent=rows.length+' linhas';
 
   const recRow=S.dreRows.find(r=>r.cat.startsWith('01T'));
-  const accRecReal=recRow?ms.reduce((a,m)=>a+(recRow.vals[m]||0),0):0;
-  const accRecOrc=recRow?ms.reduce((a,m)=>a+(getOrcRS(recRow.cat,m)||0),0):0;
+  const accRecReal=recRow?accRealVal(recRow):0;
+  const accRecOrc=recRow?accOrcVal(recRow):0;
 
   /* scale for data bars */
   const allV=[];
@@ -670,11 +702,12 @@ function renderTable(){
 
   const COLS=['Orçado R$','AV Orç','Real R$','AV Real','Var R$','Var %'];
   let sh,subh;
+  const accLbl=S.projFull?'∑ Projeção Anual':'∑ Acumulado';
   if(accOnly){
-    sh=`<tr class="sh"><th>Categoria</th><th colspan="6" class="gold-h sl">∑ Acumulado</th></tr>`;
+    sh=`<tr class="sh"><th>Categoria</th><th colspan="6" class="gold-h sl">${accLbl}</th></tr>`;
     subh=`<tr class="subh"><th>Categoria</th>${COLS.map((l,i)=>`<th class="${i===0?'sl':''}">${l}</th>`).join('')}</tr>`;
   } else {
-    sh=`<tr class="sh"><th>Categoria</th>${ms.map(m=>`<th colspan="6" class="sl">${m}</th>`).join('')}<th colspan="6" class="sl gold-h">∑ Acumulado</th></tr>`;
+    sh=`<tr class="sh"><th>Categoria</th>${ms.map(m=>`<th colspan="6" class="sl">${m}</th>`).join('')}<th colspan="6" class="sl gold-h">${accLbl}</th></tr>`;
     subh=`<tr class="subh"><th>Categoria</th>${[...ms,'__acc__'].map(()=>COLS.map((l,i)=>`<th class="${i===0?'sl':''}">${l}</th>`).join('')). join('')}</tr>`;
   }
 
@@ -685,7 +718,7 @@ function renderTable(){
 
   rows.forEach((row,ri)=>{
     const {level,isTotal}=classifyRow(row.cat);
-    const accVal=ms.reduce((a,m)=>a+(row.vals[m]||0),0);
+    const accVal=accRealVal(row);
 
     /* Update parent tracking */
     if(level===1){curL1='g_'+ri;curL2=null;}
@@ -722,14 +755,12 @@ function renderTable(){
     }
 
     /* compute values */
-    let accR=0,accO=0;
     body+=`<tr class="${rBand} ${indCls}" ${groupAttr} ${parentAttr}>`;
     body+=`<td>${catContent}</td>`;
 
     if(!accOnly){
       ms.forEach(m=>{
         const rv=row.vals[m],ov=getOrcRS(row.cat,m);
-        accR+=rv||0;accO+=ov||0;
         const mRecR=recRow?(recRow.vals[m]||0):0;
         const mRecO=recRow?(getOrcRS(recRow.cat,m)||0):0;
         const avO=mRecO?(ov||0)/Math.abs(mRecO)*100:null;
@@ -744,10 +775,12 @@ function renderTable(){
         body+=barCell(vRS,maxV,good,false);
         body+=barCell(vP,maxV,good,true);
       });
-    } else {
-      accR=ms.reduce((a,m)=>a+(row.vals[m]||0),0);
-      accO=ms.reduce((a,m)=>a+(getOrcRS(row.cat,m)||0),0);
     }
+
+    /* accumulated / annual-projection column — always uses the helpers so it
+       reflects S.projFull regardless of the accOnly display mode */
+    const accR=accRealVal(row);
+    const accO=accOrcVal(row);
 
     const avOA=accRecOrc?(accO/Math.abs(accRecOrc)*100):null;
     const avRA=accRecReal?(accR/Math.abs(accRecReal)*100):null;
